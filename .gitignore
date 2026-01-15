@@ -1,0 +1,7 @@
+__pycache__/*
+.vscode/*
+new_version/*
+bin/*
+build/*
+dist/*
+*/__pycache__/*

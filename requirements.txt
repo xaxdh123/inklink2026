@@ -1,0 +1,3 @@
+PySide6>=6.5
+requests  # optional, used if you set LOGIN_URL env var
+pyqtdarktheme  # modern dark/light theme for PySide6
