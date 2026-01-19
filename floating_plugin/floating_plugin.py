@@ -5,7 +5,9 @@ import time
 from PySide6 import QtWidgets
 from trayapp import constant
 from web.web_browser_widget import BrowserWidget
-from typing import Optional
+from typing import Callable
+
+
 from trayapp.cos_utils import (
     object_exists,
     get_single_file,
@@ -19,23 +21,18 @@ class FP(BrowserWidget):
     def __init__(
         self,
         token,
-        parent: Optional[QtWidgets.QWidget] = None,
+        parent: QtWidgets.QWidget | None = None
     ):
         self.token = token or ""
         profile_name = "floating_plugin"
-        self.presets = {
-            "报价器": [constant.FLOAT_QUO_URL, "quoteMethod", self.quoteMethod],
+        self.presets: dict[str, str | Callable[[], QtWidgets.QWidget]] = {
+            "报价器": constant.FLOAT_QUO_URL
         }
-        super().__init__(
-            {k: (v[0] + "?token=" + self.token) for k, v in self.presets.items()},
-            parent,
-            profile_name,
-        )
+        super().__init__(self.presets, parent, profile_name,self.token)
+
         self.setWindowTitle("浮窗插件")
-        self.resize(600, 880)
         self.last_request_time = 0
-        for k, v in self.presets.items():
-            self.register_js_handler(k, v[1], v[2])
+        self.register_js_handler("报价器", "quoteMethod", self.quoteMethod)
 
     def parse_attr(self, attr):
         _res = {"name": attr["attr_name"], "value": attr["attr_value"]}
@@ -95,10 +92,14 @@ class FP(BrowserWidget):
         return {_key: _res}
 
     def quoteMethod(self, data):
+        if not data:
+            return
+        feature_name = next(iter(self.presets))
         app_dir = Path(__file__).parent.parent
         local_path = app_dir / constant.DIR_JAVASCRIPT
         remote_path = app_dir / constant.DIR_JAVASCRIPT_REMOTE
         file_name = data[0]["prod_code"] + ".js"
+
         if time.time() - self.last_request_time >= 60:
             remote_md5 = (
                 get_single_file(str(remote_path / file_name))["ETag"].strip('"')
@@ -116,11 +117,12 @@ class FP(BrowserWidget):
 
         if not os.path.exists(local_path / file_name):
             self.call_js(
-                list(self.presets.keys())[0],
+                feature_name,
                 "window.setQuoteResult('报价中...');",
                 callback=print,
             )
             return
+
         params = {}
         for single in data:
             for attr in single["own_attr"] + single["craft_attr"] + single["mate_attr"]:
@@ -133,7 +135,9 @@ class FP(BrowserWidget):
                     for k, v in self.parse_attr(_a).items():
                         _wid_res[k] = v
                 params[_wid_key] = _wid_res
-        print(params)
+        if os.getenv("INKLINK_DEBUG") == "1":
+            print(params)
+
 
         try:
             json_content = json.dumps(params, indent=4, ensure_ascii=False)
@@ -144,9 +148,10 @@ class FP(BrowserWidget):
                 js_content += "\n"
             js_content += "window.setQuoteResult(result);"
             self.call_js(
-                list(self.presets.keys())[0],
+                feature_name,
                 js_content,
                 callback=print,
             )
+
         except Exception as e:
             print(f"读取或执行 JS 文件时出错: {e}")

@@ -24,6 +24,7 @@ class Setting(BrowserWidget):
             self.presets,
             parent,
             profile_name,
+            token
         )
         self.scroll_message()
 

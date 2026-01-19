@@ -3,7 +3,7 @@
 保留原有的浏览器功能（工具栏、地址栏、前进后退等）
 """
 
-from typing import Dict, Optional, Union, Callable
+from typing import Callable
 from PySide6 import QtWidgets
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtCore import QUrl
@@ -19,15 +19,14 @@ class BrowserWidget(BaseFeatureWindow):
     - 进度条
     """
 
-    address = None
+    address: QtWidgets.QLineEdit | None = None
 
     def __init__(
         self,
-        presets: Optional[
-            Dict[str, Union[str, Callable[[], QtWidgets.QWidget]]]
-        ] = None,
-        parent: Optional[QtWidgets.QWidget] = None,
+        presets: dict[str, str | Callable[[], QtWidgets.QWidget]] | None = None,
+        parent: QtWidgets.QWidget | None = None,
         profile_name: str = "default",
+        token: str | None = None,
     ):
         """
         初始化浏览器组件
@@ -38,13 +37,14 @@ class BrowserWidget(BaseFeatureWindow):
             profile_name: WebEngine profile名称
         """
         # 先初始化 current_view，因为父类初始化时会调用 _switch_to_feature
-        self.current_view: Optional[QWebEngineView] = None
+        self.current_view: QWebEngineView | None = None
 
         super().__init__(
             features=presets or {},
             profile_name=profile_name,
             parent=parent,
             window_title="InkLink Browser",
+            token=token or "",
         )
 
         self._build_toolbar()

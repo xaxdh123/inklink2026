@@ -99,7 +99,7 @@ def md5_single(path):
         # Read and update hash in chunks of 4K
         for byte_block in iter(lambda: file.read(4096), b""):
             md5_hash.update(byte_block)
-    return md5_hash
+    return md5_hash.hexdigest()
 
 
 def count_files_in_dir(directory: str, extension: str = ".js") -> str:
@@ -120,6 +120,7 @@ def count_files_in_dir(directory: str, extension: str = ".js") -> str:
 
 
 def get_file_list(prefix):
+    """列举 COS 前缀下所有对象，自动处理分页。"""
     marker = ""
     content = []
     while True:
@@ -128,13 +129,16 @@ def get_file_list(prefix):
         )
         if "Contents" in response:
             content.extend(response["Contents"])
+        # IsTruncated=false 表示已取完全部分页
         if response["IsTruncated"] == "false":
             break
         marker = response["NextMarker"]
     return content
 
 
+
 def md5Parse(p, f, dict, data):
+    """计算文件 MD5，并拼接为远端相对路径（基于 data["downloadPath"]）。"""
     join = os.path.join(p, f)
     # join_name = join[join.find("起印桌面软件") + 7 :].replace("\\", "/")
     # 拼接完整绝对路径
@@ -149,6 +153,7 @@ def md5Parse(p, f, dict, data):
         for byte_block in iter(lambda: file.read(4096), b""):
             md5_hash.update(byte_block)
         dict[rel_path] = md5_hash.hexdigest()
+
 
 
 def download_file(i, count, key):
@@ -191,6 +196,7 @@ def download_bat():
 
 def download_parts(content, bat_file, data, callback):
     file_md5 = {}
+    # 扫描本地目录，构建相对路径 -> MD5 映射，用于与 COS ETag 比对
     for p, dirs, file in os.walk(current_path):
         if "ver-info" in dirs:
             dirs.remove("ver-info")
@@ -198,6 +204,7 @@ def download_parts(content, bat_file, data, callback):
     print("file_md5", file_md5)
     final_data = []
     for x in content:
+        # 本地不存在该 Key 时直接加入下载队列
         if x["Key"] not in file_md5:
             print(x, 111)
             final_data.append(x)
@@ -209,6 +216,7 @@ def download_parts(content, bat_file, data, callback):
         #     print(x, 111)
         #     continue
         local_file_md5 = file_md5[x["Key"]]
+        # ETag 与本地 MD5 一致则跳过下载
         if x["ETag"].replace('"', "") == local_file_md5:
             continue
         x["local_file_md5"] = local_file_md5
@@ -221,7 +229,7 @@ def download_parts(content, bat_file, data, callback):
         callback(res)
     source_folder = os.path.join(ver_dir, data["downloadPath"])
     source_folder = os.path.normpath(source_folder)
-    # 构建命令行命令
+    # 通过外部批处理替换文件并重启
     command = [
         bat_file,
         source_folder,
@@ -229,6 +237,7 @@ def download_parts(content, bat_file, data, callback):
         os.path.join(current_path, "起印桌面软件" + data["version"] + ".exe"),
         "起印桌面软件" + SETTING.version + ".exe",
     ]
+
     # 调用批处理文件
     try:
         print(command, final_data)

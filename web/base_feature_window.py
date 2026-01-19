@@ -4,7 +4,9 @@
 支持网页链接（QWebEngineView）和原生QWidget
 """
 
-from typing import Dict, Optional, Callable, Union
+from tkinter import NO
+from typing import Callable
+from urllib.parse import urlsplit, urlunsplit, parse_qsl, urlencode
 from PySide6 import QtCore, QtWidgets
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtCore import QUrl, Signal
@@ -55,12 +57,11 @@ class BaseFeatureWindow(QtWidgets.QWidget):
 
     def __init__(
         self,
-        features: Optional[
-            Dict[str, Union[str, Callable[[], QtWidgets.QWidget]]]
-        ] = None,
+        features: dict[str, str | Callable[[], QtWidgets.QWidget]] | None = None,
         profile_name: str = "default",
-        parent: Optional[QtWidgets.QWidget] = None,
+        parent: QtWidgets.QWidget | None = None,
         window_title: str = "功能窗口",
+        token="",
     ):
         """
         初始化基础功能窗口
@@ -75,23 +76,24 @@ class BaseFeatureWindow(QtWidgets.QWidget):
         """
         super().__init__(parent)
         self.setWindowTitle(window_title)
+        self.token = token
 
-        self.features: Dict[str, Union[str, Callable[[], QtWidgets.QWidget]]] = dict(
+        self.features: dict[str, str | Callable[[], QtWidgets.QWidget]] = dict(
             features or {}
         )
         self.profile_name = profile_name
 
         # 页面缓存：按钮名称 -> QWidget
-        self.page_cache: Dict[str, QtWidgets.QWidget] = {}
+        self.page_cache: dict[str, QtWidgets.QWidget] = {}
 
         # 按钮映射：按钮名称 -> QPushButton
-        self.button_map: Dict[str, QtWidgets.QPushButton] = {}
+        self.button_map: dict[str, QtWidgets.QPushButton] = {}
 
         # 当前显示的页面
-        self.current_page: Optional[QtWidgets.QWidget] = None
+        self.current_page: QtWidgets.QWidget | None = None
 
         # WebChannel 桥接对象缓存：页面名称 -> WebChannelBridge
-        self.channel_bridges: Dict[str, WebChannelBridge] = {}
+        self.channel_bridges: dict[str, WebChannelBridge] = {}
 
         self._build_ui()
         self._setup_features()
@@ -123,7 +125,7 @@ class BaseFeatureWindow(QtWidgets.QWidget):
             return
 
         # 创建按钮和页面
-        for name, feature in self.features.items():
+        for name in self.features.keys():
             # 创建按钮
             btn = QtWidgets.QPushButton(name)
             btn.setCheckable(True)
@@ -171,7 +173,23 @@ class BaseFeatureWindow(QtWidgets.QWidget):
         self.stacked.setCurrentWidget(page)
         self.current_page = page
 
-    def _get_or_create_page(self, name: str) -> Optional[QtWidgets.QWidget]:
+    def _ensure_token_param(self, url: str) -> str:
+        if not self.token:
+            return url
+
+        parts = urlsplit(url)
+
+        q = parse_qsl(parts.query, keep_blank_values=True)
+        if any(k == "token" for k, _ in q):
+            return url
+
+        q.append(("token", self.token))
+        new_query = urlencode(q, doseq=True)
+        return urlunsplit(
+            (parts.scheme, parts.netloc, parts.path, new_query, parts.fragment)
+        )
+
+    def _get_or_create_page(self, name: str) -> QtWidgets.QWidget | None:
         """获取或创建功能页面"""
         # 如果已缓存，直接返回
         if name in self.page_cache:
@@ -181,6 +199,7 @@ class BaseFeatureWindow(QtWidgets.QWidget):
         feature = self.features[name]
 
         if isinstance(feature, str):
+
             # URL字符串，创建QWebEngineView
             page = self._create_web_page(name, feature)
         elif callable(feature):
@@ -242,9 +261,7 @@ class BaseFeatureWindow(QtWidgets.QWidget):
             error_widget.setStyleSheet("color: #ff4444; padding: 20px;")
             return error_widget
 
-    def add_feature(
-        self, name: str, feature: Union[str, Callable[[], QtWidgets.QWidget]]
-    ):
+    def add_feature(self, name: str, feature: str | Callable[[], QtWidgets.QWidget]):
         """动态添加功能"""
         self.features[name] = feature
 
@@ -281,11 +298,11 @@ class BaseFeatureWindow(QtWidgets.QWidget):
         # 移除功能定义
         del self.features[name]
 
-    def get_page(self, name: str) -> Optional[QtWidgets.QWidget]:
+    def get_page(self, name: str) -> QtWidgets.QWidget:
         """获取指定功能的页面（如果已创建）"""
         return self.page_cache.get(name)
 
-    def get_bridge(self, name: str) -> Optional[WebChannelBridge]:
+    def get_bridge(self, name: str) -> WebChannelBridge:
         """获取指定功能的 WebChannel 桥接对象
 
         Args:
@@ -315,7 +332,7 @@ class BaseFeatureWindow(QtWidgets.QWidget):
         self,
         feature_name: str,
         script: str,
-        callback: Optional[Callable[[Any], None]] = None,
+        callback: Callable[[Any], None] | None = None,
     ):
         """在指定功能的页面中执行 JavaScript 代码
 
@@ -333,7 +350,7 @@ class BaseFeatureWindow(QtWidgets.QWidget):
         self,
         feature_name,
         file_path: str,
-        callback: Optional[Callable[[Any], None]] = None,
+        callback: Callable[[Any], None] | None = None,
     ):
         """读取本地 JS 文件并在网页中执行
 
