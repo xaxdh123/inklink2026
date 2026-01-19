@@ -19,7 +19,6 @@ class BrowserWidget(BaseFeatureWindow):
     - 进度条
     """
 
-    address: QtWidgets.QLineEdit | None = None
 
     def __init__(
         self,
@@ -113,9 +112,10 @@ class BrowserWidget(BaseFeatureWindow):
         toolbar_container.setStyleSheet("QFrame { background-color: #2b2b2b; }")
 
         # 插入到布局中（按钮栏之后，stacked之前）
-        main_layout = self.layout()
+        main_layout: QtWidgets.QLayout = self.layout() or QtWidgets.QVBoxLayout()
         self.button_layout.addWidget(toolbar_container)
-        main_layout.insertWidget(1, self.progress)
+        if isinstance(main_layout, QtWidgets.QVBoxLayout):
+            main_layout.insertWidget(1, self.progress)
 
     def _on_back(self):
         """后退"""
@@ -177,7 +177,7 @@ class BrowserWidget(BaseFeatureWindow):
                 pass
             self._connect_view(current_widget)
             # 更新地址栏
-            if self.address:
+            if getattr(self, "address", ""):
                 self.address.setText(current_widget.url().toString())
                 # self.address.setEnabled(True)
         else:

@@ -2,7 +2,7 @@ import sys
 import subprocess
 import psutil
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 # 如果是 Windows，需要安装: pip install pywin32
 try:
@@ -15,8 +15,8 @@ except ImportError:
 
 def launch_process(
     path: str,
-    args: Optional[list] = None,
-    cwd: Optional[str] = None,
+    args: list[Any] = [] ,
+    cwd ='',
     detach: bool = True,
 ):
     args = args or []

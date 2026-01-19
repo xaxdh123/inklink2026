@@ -4,7 +4,7 @@
 支持网页链接（QWebEngineView）和原生QWidget
 """
 
-from tkinter import NO
+from tkinter import N, NO
 from typing import Callable
 from urllib.parse import urlsplit, urlunsplit, parse_qsl, urlencode
 from PySide6 import QtCore, QtWidgets
@@ -176,14 +176,12 @@ class BaseFeatureWindow(QtWidgets.QWidget):
     def _ensure_token_param(self, url: str) -> str:
         if not self.token:
             return url
-
         parts = urlsplit(url)
-
         q = parse_qsl(parts.query, keep_blank_values=True)
-        if any(k == "token" for k, _ in q):
-            return url
-
-        q.append(("token", self.token))
+        if not any(k == "token" for k, _ in q):
+            q.append(("token", self.token))
+        if not any(k == "no_layout" for k, _ in q):
+            q.append(("no_layout", "1"))
         new_query = urlencode(q, doseq=True)
         return urlunsplit(
             (parts.scheme, parts.netloc, parts.path, new_query, parts.fragment)
@@ -298,11 +296,11 @@ class BaseFeatureWindow(QtWidgets.QWidget):
         # 移除功能定义
         del self.features[name]
 
-    def get_page(self, name: str) -> QtWidgets.QWidget:
+    def get_page(self, name: str) -> QtWidgets.QWidget | None:
         """获取指定功能的页面（如果已创建）"""
         return self.page_cache.get(name)
 
-    def get_bridge(self, name: str) -> WebChannelBridge:
+    def get_bridge(self, name: str) -> WebChannelBridge | None:
         """获取指定功能的 WebChannel 桥接对象
 
         Args:
@@ -314,7 +312,7 @@ class BaseFeatureWindow(QtWidgets.QWidget):
         return self.channel_bridges.get(name)
 
     def register_js_handler(
-        self, feature_name: str, method_name: str, handler: Callable
+        self, feature_name: str, method_name: str, handler: Callable[..., Any]
     ):
         """为指定功能注册 JavaScript 调用处理器
 

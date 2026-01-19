@@ -1,4 +1,4 @@
-import os
+# encoding=utf-8
 import wmi
 import time
 import uuid
@@ -29,6 +29,7 @@ class LoginWorker(QtCore.QThread):
         time.sleep(0.3)
         try:
             if constant.API_LOGIN_URL:
+
                 import requests
 
                 resp = requests.get(
@@ -69,7 +70,7 @@ class LoginWindow(QtWidgets.QWidget):
         self.setWindowTitle("登录")
         self.setFixedSize(240, 160)
         self.mac = get_mac_address()
-
+        self.worker = LoginWorker(self.mac)
         self._build_ui()
 
         # Start resource loader in background (non-blocking)
@@ -119,7 +120,6 @@ class LoginWindow(QtWidgets.QWidget):
         self.copy_btn.setEnabled(False)
         self.retry_btn.setEnabled(False)
 
-        self.worker = LoginWorker(self.mac)
         self.worker.finished.connect(self.on_login_result)
         self.worker.start()
 

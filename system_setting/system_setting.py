@@ -1,40 +1,33 @@
+from typing import Callable
 from PySide6 import QtWidgets
+from PySide6.QtWebEngineWidgets import QWebEngineView
 from trayapp import constant
 from web.web_browser_widget import BrowserWidget
-from typing import Optional
 from system_setting.version_info import VersionInfo
 
 
 class Setting(BrowserWidget):
 
-    def __init__(
-        self,
-        token,
-        parent: Optional[QtWidgets.QWidget] = None,
-    ):
+    def __init__(self, token, parent: QtWidgets.QWidget | None = None):
         self.token = token or ""
         profile_name = "system_setting"
 
-        self.presets = {
-            "个人中心": f"{constant.SETTING_USER_URL}?no_layout=1&token=${self.token}",
-            "消息中心": f"{constant.SETTING_MSG_URL}?no_layout=1&token=${self.token}",
+        self.presets: dict[str, str | Callable[[], QtWidgets.QWidget]] = {
+            "个人中心": constant.SETTING_USER_URL,
+            "消息中心": constant.SETTING_MSG_URL,
             "版本信息": lambda: VersionInfo(),
         }
-        super().__init__(
-            self.presets,
-            parent,
-            profile_name,
-            token
-        )
+        super().__init__(self.presets, parent, profile_name, token)
         self.scroll_message()
 
     def scroll_message(self):
         def create_listen(name):
             if name == "消息中心":
                 page = self.get_page("消息中心")
-                page.loadFinished.connect(
-                    lambda: page.page().runJavaScript("alert(111)")
-                )
+                if isinstance(page, QWebEngineView):
+                    page.loadFinished.connect(
+                        lambda: page.page().runJavaScript("alert(111)")
+                    )
 
         self.create_page_signal.connect(create_listen)
 

@@ -6,8 +6,9 @@ WebChannel 桥接对象
 
 import json
 import traceback
-from typing import Callable, Dict
+from typing import Any, Callable
 from PySide6 import QtCore
+from PySide6.QtWebEngineWidgets import QWebEngineView
 import debugpy
 
 
@@ -20,7 +21,8 @@ class WebChannelBridge(QtCore.QObject):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self._handlers: Dict[str, Callable] = {}
+        self._handlers: dict[str, Callable[..., Any]] = {}
+        self.web_view:QWebEngineView|None = None
 
     @QtCore.Slot(str)
     def on_web_button_clicked(self, data: str):
@@ -49,15 +51,7 @@ class WebChannelBridge(QtCore.QObject):
         except Exception:
             # 非调试状态下忽略
             pass
-        """JavaScript 调用 Python 方法
-
-        Args:
-            method: 方法名称
-            *args: 方法参数（JSON 字符串）
-
-        Returns:
-            返回值的 JSON 字符串
-        """
+        import json
         try:
             # 调用处理器
             if method in self._handlers:
@@ -81,7 +75,7 @@ class WebChannelBridge(QtCore.QObject):
 
             return json.dumps({"error": str(e)})
 
-    def register_handler(self, method: str, handler: Callable):
+    def register_handler(self, method: str, handler: Callable[..., Any]):
         """注册方法处理器
 
         Args:
