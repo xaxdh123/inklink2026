@@ -9,3 +9,9 @@ dist/*
 .conda/*
 bin/updater.bat
 bin/**/*
+layout_center/ProofTS/.history/*
+layout_center/ProofTS/.vscode/*
+layout_center/ProofTS/build/*
+layout_center/ProofTS/comb/__pycache__/*
+layout_center/ProofTS/dist/*
+layout_center/ProofTS/main.dist/*

@@ -1,0 +1,11 @@
+# Allow pip to select compatible wheels for the current Python
+PySide6>=6.5,<7
+pythonnet>=3.0
+pymupdf>=1.22
+selenium>=4.10
+webdriver-manager>=3.8
+beautifulsoup4>=4.12
+debugpy>=1.6
+# Optional useful tools
+pytest==7.4.0
+mypy==1.8.0
