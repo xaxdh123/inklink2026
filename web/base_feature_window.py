@@ -371,6 +371,16 @@ class BaseFeatureWindow(QtWidgets.QWidget):
         """设置自定义样式"""
         self.button_bar.setStyleSheet(style)
 
+    def resizeEvent(self, event):
+        """窗口尺寸改变时强制重新布局"""
+        super().resizeEvent(event)
+        layout = self.layout()
+        print("resize",layout.itemAt(0))
+        if layout is not None:
+            layout.invalidate()
+            layout.activate()
+        self.updateGeometry()
+
     def closeEvent(self, event):
         """窗口关闭事件"""
         # 清理资源

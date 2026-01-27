@@ -7,3 +7,5 @@ dist/*
 .codebuddy/*
 .vscode/*
 .conda/*
+bin/updater.bat
+bin/**/*

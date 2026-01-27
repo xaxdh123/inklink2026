@@ -73,7 +73,7 @@ class QNetworkHttpClient(QtCore.QObject):
                 return
             if done:
                 raw_data = reply.readAll().data() 
-                text = raw_data.decode('utf-8', errors="replace")
+                text = raw_data.decode('utf-8', errors="replace")  # pyright: ignore[reportAttributeAccessIssue]
                 try:
                     data = json.loads(text)
                     status_code = data['code'] if 'code' in data else 500
