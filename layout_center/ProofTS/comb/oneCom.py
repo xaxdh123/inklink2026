@@ -14,7 +14,7 @@ from PySide6.QtWidgets import (
     QMessageBox,
 )
 
-from comb import GLOB_CONFIG
+from utils import GLOB_CONFIG
 
 from comb.AutoThread import AutoThread
 from comb.MainWorker import MainWorker
@@ -33,22 +33,22 @@ class OneComb(QWidget):
         btnStyle = labelStyle.copy()
         btnStyle["styleSheet"] = "opacity:0.8;padding: 0 4px;font-size:12px"
 
-        parent = QGridLayout(contentsMargins=QMargins(0, 0, 0, 0), spacing=0)
+        parent = QGridLayout(contentsMargins=QMargins(0, 0, 0, 0), spacing=0)  # type: ignore
         srcPath = QLineEdit(text=GLOB_CONFIG.value("ui/src_path"), **lineEditStyle)
         srcPath.editingFinished.connect(
             lambda: GLOB_CONFIG.setValue("ui/src_path", srcPath.text())
         )
-        srcSel = QPushButton(text="原始", **btnStyle)
+        srcSel = QPushButton(text="原始", **btnStyle)  # type: ignore
         srcSel.clicked.connect(lambda: self.select_file(srcPath))
         srcMvPath = QLineEdit(text=GLOB_CONFIG.value("ui/src_mv_path"), **lineEditStyle)
         srcMvPath.editingFinished.connect(
             lambda: GLOB_CONFIG.setValue("ui/src_mv_path", srcMvPath.text())
         )
-        srcMvSel = QPushButton(text="备份", **btnStyle)
+        srcMvSel = QPushButton(text="备份", **btnStyle)  # type: ignore
         srcMvSel.clicked.connect(lambda: self.select_file(srcMvPath))
-        self.startB = QPushButton(text="开始", fixedHeight=60)
+        self.startB = QPushButton(text="开始", fixedHeight=60)  # type: ignore
         self.startB.clicked.connect(self.start)
-        self.startB2 = QPushButton(text="监听", fixedHeight=30)
+        self.startB2 = QPushButton(text="监听", fixedHeight=30)  # type: ignore
         self.startB2.clicked.connect(self.listen)
         parent.addWidget(srcSel, 0, 0, 1, 1)
         parent.addWidget(srcPath, 0, 1, 1, 4)
@@ -61,7 +61,7 @@ class OneComb(QWidget):
         desPath.editingFinished.connect(
             lambda: GLOB_CONFIG.setValue("ui/dest_path", desPath.text())
         )
-        desSel = QPushButton(text="印刷", **btnStyle)
+        desSel = QPushButton(text="印刷", **btnStyle)  # type: ignore
         desSel.clicked.connect(lambda: self.select_file(desPath))
         desDaoPath = QLineEdit(
             text=GLOB_CONFIG.value("ui/dest_dao_path"), **lineEditStyle
@@ -69,7 +69,7 @@ class OneComb(QWidget):
         desDaoPath.editingFinished.connect(
             lambda: GLOB_CONFIG.setValue("ui/dest_dao_path", desDaoPath.text())
         )
-        desDaoSel = QPushButton(text="自割", **btnStyle)
+        desDaoSel = QPushButton(text="自割", **btnStyle)  # type: ignore
         desDaoSel.clicked.connect(lambda: self.select_file(desDaoPath))
         parent.addWidget(desSel, 1, 0, 1, 1)
         parent.addWidget(desPath, 1, 1, 1, 4)
@@ -80,7 +80,7 @@ class OneComb(QWidget):
         des2Path.editingFinished.connect(
             lambda: GLOB_CONFIG.setValue("ui/dest_2_path", des2Path.text())
         )
-        des2Sel = QPushButton(text="刀线", **btnStyle)
+        des2Sel = QPushButton(text="刀线", **btnStyle)  # type: ignore
         des2Sel.clicked.connect(lambda: self.select_file(des2Path))
         spaceItem = QLineEdit(text=GLOB_CONFIG.value("ui/over_time"), **labelStyle)
         spaceItem.editingFinished.connect(
@@ -93,7 +93,7 @@ class OneComb(QWidget):
         parent.addWidget(self.typeset, 2, 6, 1, 4)
 
         self.browser = QTextBrowser(
-            styleSheet="background-color: #99FFFFFF;margin-top:2px"
+            styleSheet="background-color: #99FFFFFF;margin-top:2px"  # type: ignore
         )
         parent.addWidget(self.browser, 3, 0, 1, 11)
         parent.setRowStretch(3, 1)

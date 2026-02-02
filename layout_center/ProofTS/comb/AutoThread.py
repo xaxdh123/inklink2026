@@ -1,12 +1,13 @@
 # encoding: utf-8
 
+import copy
 from PySide6.QtCore import QThread, Signal, QSettings
 from comb.MainWorker import MainWorker
 from comb.FileObj import FileObj
 import time
 import debugpy
 import os
-import comb
+from utils import GLOB_CONFIG
 
 
 class AutoThread(QThread):
@@ -33,17 +34,16 @@ class AutoThread(QThread):
             if self.needStop:
                 self.__sign_auto.emit({"msg": "手动停止监听。", "auto_done": True})
                 return
+            over_time_val = int(GLOB_CONFIG.value("ui/over_time") or 3600)
+            threshold = time.time() - over_time_val
 
             # 1. 快速读取待处理任务，缩短锁定时间
             to_process = []
-            comb.GLOB_CONFIG.beginGroup("half_quarter_page")
+            GLOB_CONFIG.beginGroup("half_quarter_page")
             try:
-                over_time_val = int(comb.GLOB_CONFIG.value("ui/over_time") or 3600)
-                threshold = time.time() - over_time_val
-
-                keys = comb.GLOB_CONFIG.childKeys()
+                keys = GLOB_CONFIG.childKeys()
                 for key in keys:
-                    file_kv = comb.GLOB_CONFIG.value(key)
+                    file_kv = GLOB_CONFIG.value(key)
                     if not file_kv:
                         continue
                     min_time = min(file_kv.keys()) / 10
@@ -53,15 +53,15 @@ class AutoThread(QThread):
                     if min_time <= threshold or usePage >= 1:
                         to_process.append((key, file_vs))
             finally:
-                comb.GLOB_CONFIG.endGroup()
+                GLOB_CONFIG.endGroup()
 
             # 2. 在锁之外执行耗时的排版操作
             for key, file_vs in to_process:
                 self.comb_files(file_vs)
                 # 处理完后再移除
-                comb.GLOB_CONFIG.beginGroup("half_quarter_page")
-                comb.GLOB_CONFIG.remove(key)
-                comb.GLOB_CONFIG.endGroup()
+                GLOB_CONFIG.beginGroup("half_quarter_page")
+                GLOB_CONFIG.remove(key)
+                GLOB_CONFIG.endGroup()
 
     def comb_files(self, files: list[FileObj]):
         """
@@ -111,7 +111,11 @@ class AutoThread(QThread):
                     if file_025_2:
                         last_file = self.worker.placed_file(file_025_2, last_file)
                 else:
-                    file_05.pos_info[1] = file_05.pos_info[0].copy()
+                    if len(file_05.pos_info) < 2:
+                        file_05.pos_info[1] = copy.deepcopy(file_05.pos_info[0])
+                    else:
+                        file_05.pos_info[2] = copy.deepcopy(file_05.pos_info[0])
+                        file_05.pos_info[3] = copy.deepcopy(file_05.pos_info[1])
                     file_05.place_way["more"] += len(file_05.pos_info[0]["print"])
                     last_file = self.worker.placed_file(file_05, None)
             self.worker.place_end(last_file)

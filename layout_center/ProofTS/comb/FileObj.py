@@ -16,7 +16,7 @@ from typing import List, Any, Dict, Optional
 
 import fitz  # PyMuPDF
 
-from comb import GLOB_CONFIG
+from utils import GLOB_CONFIG
 from utils import pt_to_mm
 
 logger = logging.getLogger(__name__)
@@ -98,7 +98,7 @@ class FileObj:
                     remark_temp = remark_temp.replace(kw, "", 1)
                 split_data = {
                     segment.split(":")[0]: segment.split(":")[1].split("x")
-                    for segment in GLOB_CONFIG.value("storage/combine_multi", type=list)
+                    for segment in GLOB_CONFIG.value("storage/combine_multi", type=list)  # type: ignore
                     if segment
                 }
                 multi_comb_re_1 = re.compile(r"([1一]张(\d+)[贴枚])")
@@ -189,7 +189,7 @@ class FileObj:
 
         # 解析配置中允许的模切尺寸（形如 "A×B,A2xB2,..."，每项为 "AxB"）
         result: List[List[int]] = []
-        for pair_str in GLOB_CONFIG.value("page/outline_size", type=list):
+        for pair_str in GLOB_CONFIG.value("page/outline_size", type=list):  # type: ignore
             try:
                 a, b = map(int, pair_str.strip().split("x"))
             except Exception as _:

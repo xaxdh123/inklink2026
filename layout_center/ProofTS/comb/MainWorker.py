@@ -15,7 +15,7 @@ import debugpy
 from PySide6.QtCore import QObject, Signal, Slot
 import comb
 from comb.FileObj import FileObj
-from utils import _now, GLOB_NETWORK
+from utils import _now, GLOB_NETWORK, GLOB_CONFIG
 
 clr.AddReference("System.Core")
 clr.AddReference(rf"resources\out-pdf\ClassLibrary1")
@@ -70,18 +70,15 @@ class MainWorker(QObject):
             pass
         self._do_next = True
         if not self.waiting_dir:
-            self.waiting_dir = os.path.join(
-                comb.GLOB_CONFIG.value("ui/src_path"), "待出版"
-            )
+            self.waiting_dir = os.path.join(GLOB_CONFIG.value("ui/src_path"), "待出版")
             os.makedirs(self.waiting_dir, exist_ok=True)
-        comb.GLOB_CONFIG.beginGroup("mate_folder")
+        GLOB_CONFIG.beginGroup("mate_folder")
         self.map_mate = {
-            k: list(comb.GLOB_CONFIG.value(k).split(","))
-            for k in comb.GLOB_CONFIG.childKeys()
+            k: list(GLOB_CONFIG.value(k).split(",")) for k in GLOB_CONFIG.childKeys()
         }
-        comb.GLOB_CONFIG.endGroup()
+        GLOB_CONFIG.endGroup()
         self.message_signal.emit(
-            {"msg": f"开始查找：{comb.GLOB_CONFIG.value('ui/src_path')}"}
+            {"msg": f"开始查找：{GLOB_CONFIG.value('ui/src_path')}"}
         )
         while True:
             if not self._do_next:
@@ -128,13 +125,13 @@ class MainWorker(QObject):
             f: FileObj = iter_file.pop()
             self.__move_wait(f)
             key = self.__format_type(f, False)
-            comb.GLOB_CONFIG.beginGroup("half_quarter_page")
+            GLOB_CONFIG.beginGroup("half_quarter_page")
             try:
-                cache: dict = comb.GLOB_CONFIG.value(key) or {}
+                cache: dict = GLOB_CONFIG.value(key) or {}
                 cache[int(time.time() * 10)] = f.to_dict()
-                comb.GLOB_CONFIG.setValue(key, cache)
+                GLOB_CONFIG.setValue(key, cache)
             finally:
-                comb.GLOB_CONFIG.endGroup()
+                GLOB_CONFIG.endGroup()
             time.sleep(0.1)
         else:
             _last_file = []
@@ -170,8 +167,8 @@ class MainWorker(QObject):
         - 读取配置中的延迟时间；在延迟期内如果文件夹没有变化则认为收集完成。
         - 对文件名不合法或解析失败的文件移动到异常目录。
         """
-        _src_path = comb.GLOB_CONFIG.value("ui/src_path")
-        _delay_time = int(comb.GLOB_CONFIG.value("ui/delay_time"))
+        _src_path = GLOB_CONFIG.value("ui/src_path")
+        _delay_time = int(GLOB_CONFIG.value("ui/delay_time"))
         print(_now(), "_src_path", _src_path, "_delay_time", _delay_time)
         _loop_run_time = time.time() + _delay_time
         join = os.path.join(_src_path, "*.pdf")
@@ -199,9 +196,9 @@ class MainWorker(QObject):
                 obj = FileObj(*os.path.split(f), f_all[0])
                 obj.gen_size()
                 #  核心 计算排版位置 方法
-                w1, h1 = map(int, comb.GLOB_CONFIG.value("rect/single").split("x"))
-                w2, h2 = map(int, comb.GLOB_CONFIG.value("rect/half").split("x"))
-                w4, h4 = map(int, comb.GLOB_CONFIG.value("rect/quart").split("x"))
+                w1, h1 = map(int, GLOB_CONFIG.value("rect/single").split("x"))
+                w2, h2 = map(int, GLOB_CONFIG.value("rect/half").split("x"))
+                w4, h4 = map(int, GLOB_CONFIG.value("rect/quart").split("x"))
                 _judge_fixed = self.judge_fixed(obj)
                 if not _judge_fixed:
                     w, h, boxes = obj.gen_params(w1, h1, self.clr_R)
@@ -275,9 +272,7 @@ class MainWorker(QObject):
 
         # 针对单份(kind==1)的优先规则（尽量用更小尺寸放置以提高合版率），并记录原因
         if obj.kind == 1:
-            half_cut_threshold = float(
-                comb.GLOB_CONFIG.value("page/half_cut_threshold")
-            )
+            half_cut_threshold = float(GLOB_CONFIG.value("page/half_cut_threshold"))
             if _r4 and _r4.GetRepeat() >= obj.count:
                 self.gen_ways(obj, _r4, 4, True)
             elif _r2.GetRepeat() >= obj.count:
@@ -340,7 +335,7 @@ class MainWorker(QObject):
             )
             _pd = [d for d in _res.GetPlaced()]
 
-        _space = float(comb.GLOB_CONFIG.value("ui/space_item"))
+        _space = float(GLOB_CONFIG.value("ui/space_item"))
         repeat = _res.GetRepeat() if is_one_kind or obj.deep_cut else 1
         count = math.ceil(obj.count / repeat)
         more = count * repeat - obj.count
@@ -431,6 +426,12 @@ class MainWorker(QObject):
                 self.message_signal.emit({"typeset": no})
                 if last_file.place_way["key"] == 2 and cur_file.place_way["key"] == 4:
                     _index = 2
+                elif (
+                    last_file.place_way["index"] % 4 != 3
+                    and last_file.place_way["key"] == 4
+                    and cur_file.place_way["key"] == 2
+                ):
+                    _index = 1
                 else:
                     _index = last_file.place_way["index"] or 0
                 config["index"] = _index
@@ -489,7 +490,7 @@ class MainWorker(QObject):
             cur_file.place_way["src_print"] = result["print"]
             cur_file.place_way["src_lines"] = result["lines"]
             strf_time = datetime.datetime.now().strftime("%Y-%m-%d")
-            src_mv_path = comb.GLOB_CONFIG.value("ui/src_mv_path")
+            src_mv_path = GLOB_CONFIG.value("ui/src_mv_path")
             src_mv_path_date = os.path.join(src_mv_path, strf_time)
             dest_src_moved = os.path.join(
                 src_mv_path_date, os.path.basename(cur_file.file_path)
@@ -563,21 +564,21 @@ class MainWorker(QObject):
         data["crafts"] = ",".join(crafts)
         data["remark"] = file.remark
         strf_time = datetime.datetime.now().strftime("%Y-%m-%d")
-        date_order_kv = comb.GLOB_CONFIG.value("storage/data_order_no", strf_time)
-        comb.GLOB_CONFIG.beginGroup("data_order_no")
+        date_order_kv = GLOB_CONFIG.value("storage/data_order_no", strf_time)
+        GLOB_CONFIG.beginGroup("data_order_no")
         if date_order_kv != strf_time:
-            comb.GLOB_CONFIG.setValue("storage/data_order_no", strf_time)
-            for key in comb.GLOB_CONFIG.childKeys():  # 删除每个键
-                comb.GLOB_CONFIG.remove(key)
-        data_order_no: str = comb.GLOB_CONFIG.value(file.order) or ""
+            GLOB_CONFIG.setValue("storage/data_order_no", strf_time)
+            for key in GLOB_CONFIG.childKeys():  # 删除每个键
+                GLOB_CONFIG.remove(key)
+        data_order_no: str = GLOB_CONFIG.value(file.order) or ""
         if not file.order in data_order_no.split(","):
             data["relate"] = file.order + ":" + data_order_no
             data_order_no = data["no"]
         else:
             data["relate"] = ""
             data_order_no += "," + data["no"]
-        comb.GLOB_CONFIG.setValue(file.order, data_order_no)
-        comb.GLOB_CONFIG.endGroup()
+        GLOB_CONFIG.setValue(file.order, data_order_no)
+        GLOB_CONFIG.endGroup()
         title_pos = [187, 451] if file.place_way["key"] == 4 else [160, 451]
         file.place_way["src_print"] = self.clr_addImg(
             file.place_way["src_print"],
@@ -586,9 +587,9 @@ class MainWorker(QObject):
             data,
         )
         self.message_signal.emit({"msg": f"为{data['no']} 添加附加信息"})
-        dest_path = comb.GLOB_CONFIG.value("ui/dest_path")
-        dest_2_path = comb.GLOB_CONFIG.value("ui/dest_2_path")
-        dest_dao_path = comb.GLOB_CONFIG.value("ui/dest_dao_path")
+        dest_path = GLOB_CONFIG.value("ui/dest_path")
+        dest_2_path = GLOB_CONFIG.value("ui/dest_2_path")
+        dest_dao_path = GLOB_CONFIG.value("ui/dest_dao_path")
         try:
             dest_2_path_date = os.path.join(dest_2_path, strf_time)
             os.makedirs(dest_2_path_date, exist_ok=True)
@@ -844,7 +845,7 @@ class MainWorker(QObject):
 
     @staticmethod
     def __format_type(file: FileObj, need_customer=True):
-        _cache_craft = comb.GLOB_CONFIG.value("storage/can_work_list", type=list)
+        _cache_craft = GLOB_CONFIG.value("storage/can_work_list", type=list)
         craft = file.craft[:]
         for c in file.craft:
             for cc in _cache_craft:

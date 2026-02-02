@@ -3,7 +3,7 @@ __pycache__/*
 new_version/*
 build/*
 dist/*
-*/__pycache__/*
+**/__pycache__/*
 .codebuddy/*
 .vscode/*
 .conda/*
@@ -12,6 +12,8 @@ bin/**/*
 layout_center/ProofTS/.history/*
 layout_center/ProofTS/.vscode/*
 layout_center/ProofTS/build/*
-layout_center/ProofTS/comb/__pycache__/*
 layout_center/ProofTS/dist/*
 layout_center/ProofTS/main.dist/*
+layout_center/ProofTS/utils/__pycache__/*
+layout_center/ProofTS/utils/__pycache__/__init__.cpython-311.pyc
+layout_center/ProofTS/output.log
