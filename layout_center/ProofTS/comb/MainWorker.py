@@ -13,8 +13,8 @@ import fitz
 import clr
 import debugpy
 from PySide6.QtCore import QObject, Signal, Slot
-import comb
-from comb.FileObj import FileObj
+from layout_center.ProofTS import comb
+from layout_center.ProofTS.comb.FileObj import FileObj
 from utils import _now, GLOB_NETWORK, GLOB_CONFIG
 
 clr.AddReference("System.Core")

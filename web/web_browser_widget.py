@@ -182,7 +182,7 @@ class BrowserWidget(BaseFeatureWindow):
                 # self.address.setEnabled(True)
         else:
             self.current_view = None
-            if self.address:
+            if getattr(self, "address", ""):
                 self.address.clear()
                 self.address.setEnabled(False)
 

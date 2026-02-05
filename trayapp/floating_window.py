@@ -92,7 +92,7 @@ class FloatingWindow(QtWidgets.QWidget):
                 lambda: self.on_feature(constant.COMPONENT_MAP[-1])
             )
         if key == "MainApp":
-            cur = self.settings.value(f"{key}/version", "0.0.0")
+            cur = GLOB_CONFIG.value(f"{key}/version", "0.0.0")
             self._version_label.setText(f"inklink-{cur}{'*'if is_ready else ''}")
 
     def _build_ui(self):

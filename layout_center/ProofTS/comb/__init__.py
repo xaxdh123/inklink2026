@@ -1,6 +1,5 @@
 import traceback
 from datetime import datetime
-from PySide6.QtCore import QSettings
 from utils import GLOB_CONFIG
 
 

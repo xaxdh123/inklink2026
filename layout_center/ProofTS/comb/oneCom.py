@@ -4,6 +4,7 @@ import datetime
 from PySide6.QtCore import QMargins, QThread, QTimer
 from PySide6.QtGui import QTextCursor
 from PySide6.QtWidgets import (
+    QSizePolicy,
     QWidget,
     QTextBrowser,
     QGridLayout,
@@ -16,39 +17,33 @@ from PySide6.QtWidgets import (
 
 from utils import GLOB_CONFIG
 
-from comb.AutoThread import AutoThread
-from comb.MainWorker import MainWorker
+from layout_center.ProofTS.comb.AutoThread import AutoThread
+from layout_center.ProofTS.comb.MainWorker import MainWorker
 
 
 class OneComb(QWidget):
 
     def init_view(self):
-        labelStyle = {
-            "fixedHeight": 30,
-            "fixedWidth": 50,
-            "styleSheet": "background-color: #88FFFFFF;padding: 0 4px;font-size:12px",
-        }
-        lineEditStyle = labelStyle.copy()
-        lineEditStyle["fixedWidth"] = 200
-        btnStyle = labelStyle.copy()
-        btnStyle["styleSheet"] = "opacity:0.8;padding: 0 4px;font-size:12px"
 
-        parent = QGridLayout(contentsMargins=QMargins(0, 0, 0, 0), spacing=0)  # type: ignore
-        srcPath = QLineEdit(text=GLOB_CONFIG.value("ui/src_path"), **lineEditStyle)
+        parent = QGridLayout(contentsMargins=QMargins(0, 0, 0, 0), spacing=2)  # type: ignore
+        srcPath = QLineEdit(text=GLOB_CONFIG.value("ui/src_path"))
         srcPath.editingFinished.connect(
             lambda: GLOB_CONFIG.setValue("ui/src_path", srcPath.text())
         )
-        srcSel = QPushButton(text="原始", **btnStyle)  # type: ignore
+        srcSel = QPushButton(text="原始")  # type: ignore
         srcSel.clicked.connect(lambda: self.select_file(srcPath))
-        srcMvPath = QLineEdit(text=GLOB_CONFIG.value("ui/src_mv_path"), **lineEditStyle)
+        srcMvPath = QLineEdit(text=GLOB_CONFIG.value("ui/src_mv_path"))
         srcMvPath.editingFinished.connect(
             lambda: GLOB_CONFIG.setValue("ui/src_mv_path", srcMvPath.text())
         )
-        srcMvSel = QPushButton(text="备份", **btnStyle)  # type: ignore
+        srcMvSel = QPushButton(text="备份")  # type: ignore
         srcMvSel.clicked.connect(lambda: self.select_file(srcMvPath))
-        self.startB = QPushButton(text="开始", fixedHeight=60)  # type: ignore
+        self.startB = QPushButton(text="开始")  # type: ignore
         self.startB.clicked.connect(self.start)
-        self.startB2 = QPushButton(text="监听", fixedHeight=30)  # type: ignore
+        self.startB.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        )
+        self.startB2 = QPushButton(text="监听")  # type: ignore
         self.startB2.clicked.connect(self.listen)
         parent.addWidget(srcSel, 0, 0, 1, 1)
         parent.addWidget(srcPath, 0, 1, 1, 4)
@@ -57,47 +52,45 @@ class OneComb(QWidget):
         parent.addWidget(self.startB, 0, 10, 2, 1)
         parent.addWidget(self.startB2, 2, 10, 1, 1)
 
-        desPath = QLineEdit(text=GLOB_CONFIG.value("ui/dest_path"), **lineEditStyle)
+        desPath = QLineEdit(text=GLOB_CONFIG.value("ui/dest_path"))
         desPath.editingFinished.connect(
             lambda: GLOB_CONFIG.setValue("ui/dest_path", desPath.text())
         )
-        desSel = QPushButton(text="印刷", **btnStyle)  # type: ignore
+        desSel = QPushButton(text="印刷")  # type: ignore
         desSel.clicked.connect(lambda: self.select_file(desPath))
-        desDaoPath = QLineEdit(
-            text=GLOB_CONFIG.value("ui/dest_dao_path"), **lineEditStyle
-        )
+        desDaoPath = QLineEdit(text=GLOB_CONFIG.value("ui/dest_dao_path"))
         desDaoPath.editingFinished.connect(
             lambda: GLOB_CONFIG.setValue("ui/dest_dao_path", desDaoPath.text())
         )
-        desDaoSel = QPushButton(text="自割", **btnStyle)  # type: ignore
+        desDaoSel = QPushButton(text="自割")  # type: ignore
         desDaoSel.clicked.connect(lambda: self.select_file(desDaoPath))
         parent.addWidget(desSel, 1, 0, 1, 1)
         parent.addWidget(desPath, 1, 1, 1, 4)
         parent.addWidget(desDaoSel, 1, 5, 1, 1)
         parent.addWidget(desDaoPath, 1, 6, 1, 4)
 
-        des2Path = QLineEdit(text=GLOB_CONFIG.value("ui/dest_2_path"), **lineEditStyle)
+        des2Path = QLineEdit(text=GLOB_CONFIG.value("ui/dest_2_path"))
         des2Path.editingFinished.connect(
             lambda: GLOB_CONFIG.setValue("ui/dest_2_path", des2Path.text())
         )
-        des2Sel = QPushButton(text="刀线", **btnStyle)  # type: ignore
+        des2Sel = QPushButton(text="刀线")  # type: ignore
         des2Sel.clicked.connect(lambda: self.select_file(des2Path))
-        spaceItem = QLineEdit(text=GLOB_CONFIG.value("ui/over_time"), **labelStyle)
+        spaceItem = QLineEdit(text=GLOB_CONFIG.value("ui/over_time"), fixedWidth=50)
         spaceItem.editingFinished.connect(
             lambda: GLOB_CONFIG.setValue("ui/over_time", spaceItem.text())
         )
-        self.typeset = QLabel(text=f"当前大版号为:--------------", **lineEditStyle)
+        self.typeset = QLabel(text=f"当前大版号为:--------------")
         parent.addWidget(des2Sel, 2, 0, 1, 1)
         parent.addWidget(des2Path, 2, 1, 1, 4)
         parent.addWidget(spaceItem, 2, 5, 1, 1)
         parent.addWidget(self.typeset, 2, 6, 1, 4)
 
-        self.browser = QTextBrowser(
-            styleSheet="background-color: #99FFFFFF;margin-top:2px"  # type: ignore
-        )
+        self.browser = QTextBrowser()
+        self.browser.append("专版执行日志：")
         parent.addWidget(self.browser, 3, 0, 1, 11)
         parent.setRowStretch(3, 1)
-        parent.setColumnStretch(10, 1)
+        parent.setColumnStretch(1, 1)
+        parent.setColumnStretch(6, 1)
         self.setLayout(parent)
         self.st_list = [srcPath, srcMvPath, desPath, desDaoPath, des2Path, spaceItem]
 

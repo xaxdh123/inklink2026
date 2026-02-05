@@ -35,13 +35,13 @@
             "type": "pickString",
             "description": "选择启动模块",
             "options": [
-                "customer",
-                "float",
-                "setting",
-                "third",
-                "design",
-                "audit",
-                "layout"
+                "AuditCenter",
+                "CustomerService",
+                "DesignCenter",
+                "FloatingPlugin",
+                "LayoutCenter",
+                "SystemSetting",
+                "ThirdParty",
             ],
             "default": "float"
         }

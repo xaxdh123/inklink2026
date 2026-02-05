@@ -1,8 +1,8 @@
 import sys
 
 from PySide6.QtWidgets import QApplication
-from comb.oneCom import OneComb
-from manual.slowCom import SlowCom
+from layout_center.ProofTS.comb.oneCom import OneComb
+from layout_center.ProofTS.manual.slowCom import SlowCom
 
 if __name__ == "__main__":
     # log_file = open("output.log", "a", encoding="utf-8")

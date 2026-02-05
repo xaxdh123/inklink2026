@@ -18,16 +18,13 @@ class SystemSetting(BrowserWidget):
             "版本信息": VersionInfo,
         }
         super().__init__(self.presets, parent, profile_name, self.token)
-        self.scroll_message()
         if "jump_page" in args:
             self._switch_to_feature(args["jump_page"])
         self.work = ModuleUrlsThreads(profile_name)
-        self.work.resp_name_urls.connect(self.add_more)
+        self.work.resp_name_urls.connect(self.add_feature)
+        self.work.resp_resize.connect(self.resize)
         self.work.start()
-
-    def add_more(self, data):
-        for k, v in data.items():
-            self.add_feature(k, v)
+        self.scroll_message()
 
     def scroll_message(self):
         def create_listen(name):

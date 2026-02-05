@@ -15,9 +15,6 @@ class AuditCenter(BrowserWidget):
         if "jump_page" in args:
             self._switch_to_feature(args["jump_page"])
         self.work = ModuleUrlsThreads(profile_name)
-        self.work.resp_name_urls.connect(self.add_more)
+        self.work.resp_name_urls.connect(self.add_feature)
+        self.work.resp_resize.connect(self.resize)
         self.work.start()
-
-    def add_more(self, data):
-        for k, v in data.items():
-            self.add_feature(k, v)

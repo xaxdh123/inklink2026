@@ -1,12 +1,11 @@
 # encoding: utf-8
 
 import copy
-from PySide6.QtCore import QThread, Signal, QSettings
-from comb.MainWorker import MainWorker
-from comb.FileObj import FileObj
+from PySide6.QtCore import QThread, Signal
+from layout_center.ProofTS.comb.MainWorker import MainWorker
+from layout_center.ProofTS.comb.FileObj import FileObj
 import time
 import debugpy
-import os
 from utils import GLOB_CONFIG
 
 

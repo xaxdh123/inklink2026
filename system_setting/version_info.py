@@ -16,7 +16,9 @@ from PySide6.QtWidgets import (
     QScrollArea,
     QDialog,
 )
-from PySide6.QtCore import Qt, QSettings, Slot, QProcess
+from PySide6.QtCore import Qt, Slot, QProcess
+
+from utils import GLOB_CONFIG
 
 
 class VersionItemWidget(QFrame):
@@ -95,7 +97,7 @@ class VersionItemWidget(QFrame):
 class VersionInfo(QWidget):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
-        self.settings = QSettings("Qiyin", "inklink")
+
         self.app_dir = Path(__file__).parent.parent
 
         self.setStyleSheet("background-color: #f5f7f9;")
@@ -307,7 +309,7 @@ class VersionInfo(QWidget):
             self.worker.stop()
             self.worker.wait()
 
-        self.worker = UpdateCheckWorker(self.settings, auto_download=auto_download)
+        self.worker = UpdateCheckWorker(GLOB_CONFIG, auto_download=auto_download)
         self.worker.status_changed.connect(self.on_worker_status_changed)
         self.worker.progress_changed.connect(self.progress_update)
         self.worker.finished_check.connect(self.on_check_finished)
