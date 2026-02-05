@@ -1,7 +1,10 @@
+from operator import is_
 from PySide6 import QtCore, QtWidgets
 from pathlib import Path
+from system_setting.UpdateCheckWorker import UpdateCheckWorker
 from trayapp.launcher_utils import launch_process
 from trayapp import constant
+from utils import GLOB_CONFIG
 
 
 class FloatingWindow(QtWidgets.QWidget):
@@ -65,8 +68,28 @@ class FloatingWindow(QtWidgets.QWidget):
         self.setAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground, True)
         self.setFixedSize(160, 160)
         self._drag_pos = None  # 用于窗口拖拽
-
         self._build_ui()
+        self.check_update()
+
+    def check_update(self):
+        if hasattr(self, "worker") and self.worker.isRunning():
+            self.worker.stop()
+            self.worker.wait()
+
+        self.worker = UpdateCheckWorker(GLOB_CONFIG, auto_download=True)
+        self.worker.status_changed.connect(self.on_worker_status_changed)
+        self.worker.start()
+
+    def on_worker_status_changed(self, key: str, status_text: str, is_ready: bool):
+        self._msg_label.setText(key + ": " + status_text)
+        self._msg_label.setStyleSheet("color: #909399; font-size: 9px;background:none;")
+        if is_ready:
+            self._msg_label.setStyleSheet(
+                "color: #67c23a; font-weight: bold; font-size: 9px;background:none;"
+            )
+            self._msg_label.clicked.connect(
+                lambda: self.on_feature(constant.COMPONENT_MAP[-1])
+            )
 
     def _build_ui(self):
         frame = QtWidgets.QFrame(self)
@@ -87,9 +110,9 @@ class FloatingWindow(QtWidgets.QWidget):
         _head_1.addWidget(
             self._title_label, alignment=QtCore.Qt.AlignmentFlag.AlignCenter
         )
-        self._msg_label = QtWidgets.QLabel("消息占位")
+        self._msg_label = QtWidgets.QPushButton("点击查看消息")
         self._msg_label.setObjectName("msgLabel")
-        self._msg_label.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
+        self._msg_label.setFixedHeight(16)
         _head_1.addWidget(
             self._msg_label, alignment=QtCore.Qt.AlignmentFlag.AlignCenter
         )

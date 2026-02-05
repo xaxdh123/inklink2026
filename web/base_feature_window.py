@@ -246,7 +246,7 @@ class BaseFeatureWindow(QtWidgets.QWidget):
             page.setWebChannel(channel)
 
             # 加载URL
-            view.setUrl(QUrl(url))
+            view.setUrl(QUrl(self._ensure_token_param(url)))
             return view
         except Exception as e:
             print(f"创建网页页面 '{name}' 时出错：{e}")
@@ -379,7 +379,6 @@ class BaseFeatureWindow(QtWidgets.QWidget):
             layout.invalidate()
             layout.activate()
         self.updateGeometry()
-        
 
     def closeEvent(self, event):
         """窗口关闭事件"""

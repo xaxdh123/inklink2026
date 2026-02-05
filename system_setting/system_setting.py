@@ -8,8 +8,9 @@ from system_setting.version_info import VersionInfo
 
 class Setting(BrowserWidget):
 
-    def __init__(self, token, parent: QtWidgets.QWidget | None = None):
-        self.token = token or ""
+    def __init__(self, parent: QtWidgets.QWidget | None = None):
+        args = self.get_sys_args()
+        self.token = args.user_name or ""
         profile_name = "system_setting"
 
         self.presets: dict[str, str | Callable[[], QtWidgets.QWidget]] = {
@@ -17,8 +18,10 @@ class Setting(BrowserWidget):
             "消息中心": constant.SETTING_MSG_URL,
             "版本信息": lambda: VersionInfo(),
         }
-        super().__init__(self.presets, parent, profile_name, token)
+        super().__init__(self.presets, parent, profile_name, self.token)
         self.scroll_message()
+        if args.jump_page:
+            self.jump(args.jump_page)
 
     def scroll_message(self):
         def create_listen(name):

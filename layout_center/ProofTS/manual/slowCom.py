@@ -412,8 +412,7 @@ class SlowCom(QWidget):
                     more_info.extend(
                         [t for t in tags if t in item.text() and t not in more_info]
                     )
-                    if _ir["flowTbName"] not in customer:
-                        customer.append(_ir["flowTbName"])
+
                     data_short = [x for x in item.text().split("-")[0] if x]
                     if _ir["systemOrderNo"] not in data_short:
                         self.data_order.append(_ir["systemOrderNo"] + "-" + item.text())
@@ -422,9 +421,14 @@ class SlowCom(QWidget):
                     if "^" in item.text():
                         parts = item.text().split("^")
                         for _index, sp in enumerate(parts):
-                            if re.match(r"\d+x\d+", sp) and _index > 0:
-                                craft_list.extend(parts[_index - 1].split(","))
+                            if re.match(r"\d+x\d+", sp):
+                                if _index > 0:
+                                    craft_list.extend(parts[_index - 1].split(","))
+                                if _index > 4:
+                                    customer.append(parts[_index - 5])
                     else:
+                        if _ir["flowTbName"] not in customer:
+                            customer.append(_ir["flowTbName"])
                         craft_list.extend(
                             _ir["productMain"]["productSimpleCraft"].split(",")
                         )

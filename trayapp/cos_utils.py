@@ -136,26 +136,6 @@ def get_file_list(prefix):
     return content
 
 
-
-def md5Parse(p, f, dict, data):
-    """计算文件 MD5，并拼接为远端相对路径（基于 data["downloadPath"]）。"""
-    join = os.path.join(p, f)
-    # join_name = join[join.find("起印桌面软件") + 7 :].replace("\\", "/")
-    # 拼接完整绝对路径
-    abs_path = os.path.abspath(os.path.join(p, f))
-    # 转换为相对于当前目录的路径
-    dir_path = os.path.relpath(abs_path, current_path).replace(os.path.sep, "/")
-    rel_path = data["downloadPath"] + dir_path
-    md5_hash = hashlib.md5()
-    # dict[rel_path] = os.path.getmtime(join)
-    with open(join, "rb") as file:
-        # Read and update hash in chunks of 4K
-        for byte_block in iter(lambda: file.read(4096), b""):
-            md5_hash.update(byte_block)
-        dict[rel_path] = md5_hash.hexdigest()
-
-
-
 def download_file(i, count, key):
     ver_file = os.path.join(ver_dir, key)
     if key.endswith("/"):
@@ -182,66 +162,3 @@ def copy_folder(source_folder, destination_folder):
             copy_folder(source, destination)
         else:
             shutil.copy2(source, destination_folder)
-
-
-def download_bat():
-    bat_file = os.path.join(ver_dir, constant.COS_UPGRADLE)
-    client.download_file(
-        Bucket=constant.COS_BUCKET,
-        Key=constant.COS_UPGRADLE,
-        DestFilePath=bat_file,
-    )
-    return bat_file
-
-
-def download_parts(content, bat_file, data, callback):
-    file_md5 = {}
-    # 扫描本地目录，构建相对路径 -> MD5 映射，用于与 COS ETag 比对
-    for p, dirs, file in os.walk(current_path):
-        if "ver-info" in dirs:
-            dirs.remove("ver-info")
-        [md5Parse(p, f, file_md5) for f in file]
-    print("file_md5", file_md5)
-    final_data = []
-    for x in content:
-        # 本地不存在该 Key 时直接加入下载队列
-        if x["Key"] not in file_md5:
-            print(x, 111)
-            final_data.append(x)
-            continue
-        # timeArray = time.strptime(x["LastModified"], "%Y-%m-%dT%H:%M:%S.%fZ")
-        # timestamp = time.mktime(timeArray) + 8 * 60 * 60
-        # print(timestamp, file_md5[x["Key"]])
-        # if -6 * 60 * 60 < timestamp - file_md5[x["Key"]] < 6 * 60 * 60:
-        #     print(x, 111)
-        #     continue
-        local_file_md5 = file_md5[x["Key"]]
-        # ETag 与本地 MD5 一致则跳过下载
-        if x["ETag"].replace('"', "") == local_file_md5:
-            continue
-        x["local_file_md5"] = local_file_md5
-
-        final_data.append(x)
-    print("final_data", final_data, 222)
-    print(len(content), len(final_data))
-    for i, element in enumerate(final_data):
-        res = download_file(i, len(final_data), element["Key"])
-        callback(res)
-    source_folder = os.path.join(ver_dir, data["downloadPath"])
-    source_folder = os.path.normpath(source_folder)
-    # 通过外部批处理替换文件并重启
-    command = [
-        bat_file,
-        source_folder,
-        current_path,
-        os.path.join(current_path, "起印桌面软件" + data["version"] + ".exe"),
-        "起印桌面软件" + SETTING.version + ".exe",
-    ]
-
-    # 调用批处理文件
-    try:
-        print(command, final_data)
-        subprocess.run(command, check=True)
-        print("Script executed successfully.")
-    except subprocess.CalledProcessError as e:
-        print(f"Error occurred: {e}")

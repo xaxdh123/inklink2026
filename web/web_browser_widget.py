@@ -8,6 +8,7 @@ from PySide6 import QtWidgets
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtCore import QUrl
 from web.base_feature_window import BaseFeatureWindow
+import argparse
 
 
 class BrowserWidget(BaseFeatureWindow):
@@ -18,7 +19,6 @@ class BrowserWidget(BaseFeatureWindow):
     - 地址栏
     - 进度条
     """
-
 
     def __init__(
         self,
@@ -37,7 +37,6 @@ class BrowserWidget(BaseFeatureWindow):
         """
         # 先初始化 current_view，因为父类初始化时会调用 _switch_to_feature
         self.current_view: QWebEngineView | None = None
-
         super().__init__(
             features=presets or {},
             profile_name=profile_name,
@@ -212,3 +211,23 @@ class BrowserWidget(BaseFeatureWindow):
         if self.current_view:
             return self.current_view.url().toString()
         return ""
+
+    def get_sys_args(self) -> dict:
+        # 1. 创建解析器对象
+        parser = argparse.ArgumentParser(description=self.__class__)
+        parser.add_argument("--user", dest="user_name", help="指定操作用户")
+        parser.add_argument("--jump", dest="jump_page", help="指定跳转页面")
+        # 3. 解析参数
+        args = parser.parse_args()
+        # 4. 使用参数
+        if args.user_name:
+            print(f"当前登录用户token: {args.user_name}")
+        else:
+            print("未检测到 --user 参数")
+
+        # 4. 使用参数
+        if args.jump_page:
+            print(f"当前跳转页面: {args.jump_page}")
+        else:
+            print("未检测到 --jump 参数")
+        return args

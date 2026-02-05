@@ -375,7 +375,9 @@ class MyReusableTask(QObject, QRunnable):
                 ],
             }
             resp2 = GLOB_NETWORK.urllib_post(
-                "production-api/typesettingNew/saveStickerProofingTypesetting", params
+                "production-api/typesettingNew/saveStickerProofingTypesetting",
+                params,
+                timeout=60,
             )
             print("上传新系统返回:", resp2, params)
             if resp2["code"] != 200:

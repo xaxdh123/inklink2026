@@ -525,6 +525,7 @@ class MainWorker(QObject):
             crafts.append("加急")
         data = Dictionary[str, str]()
         data["no"] = file.place_way["no"]
+        print("place_end", file.file_name, file.place_way["no"])
         try:
             if len(file.design) != FileObj.DESIGN_PREFIX_LEN:
                 resp = GLOB_NETWORK.urllib_get(
@@ -533,6 +534,7 @@ class MainWorker(QObject):
                 if resp["code"] == 200:
                     data["no"] = resp["data"]
                 else:
+                    print("creatAdhesiveTypesettingNo", resp)
                     self.message_signal.emit(
                         {
                             "msg": f"获取排版号失败，使用临时排版号: {data['no']} error: {resp['msg']}"
@@ -552,6 +554,7 @@ class MainWorker(QObject):
                 if resp["code"] == 200:
                     data["no"] = resp["data"]["code"]
                 else:
+                    print("addByDetail", resp)
                     self.message_signal.emit(
                         {
                             "msg": f"获取排版号失败，使用临时排版号: {data['no']} error: {resp['msg']}"
@@ -602,12 +605,13 @@ class MainWorker(QObject):
             dest_print_pdf = os.path.join(dest_path, src_name)
             dest_lines_pdf = os.path.join(dest_2_path_date, f"{data['no']}.pdf")
             try:
-
                 if os.path.exists(dest_print_pdf):
                     os.remove(dest_print_pdf)
                 if os.path.exists(dest_lines_pdf):
                     os.remove(dest_lines_pdf)
-            except Exception:
+            except Exception as e:
+                traceback.print_exc()
+                print("删除存在", e)
                 pass
 
             moved2 = self._safe_move(file.place_way["src_print"], dest_print_pdf)
@@ -662,10 +666,14 @@ class MainWorker(QObject):
                 dest_print_pdf=dest_print_pdf,
                 src_name=src_name,
             )
+
+            print("upload_to_system", payload)
             self.upload_to_system(payload)
+
             self.message_signal.emit({"msg": f"为 {data['no']} 移动文件"})
-        except:
+        except Exception as e:
             traceback.print_exc()
+            print("upload_to_system", e)
         return file
 
     def upload_to_system(self, payload):
@@ -723,6 +731,7 @@ class MainWorker(QObject):
                             for k, v in payload["file_list"].items()
                         ],
                     },
+                    timeout=60,
                 )
                 if resp2["code"] != 200:
                     raise Exception(

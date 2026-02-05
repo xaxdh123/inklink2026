@@ -13,7 +13,7 @@ COS_MAIN_FILE = "ver-info.json"
 COS_UPGRADLE = "upgradle.bat"
 # 组件配置列表 (显示名称, QSettings中的键名, 对应的new_version子目录名, 对应的执行文件名)
 # 注意：这里假设了一些英文键名和路径，你可以根据实际情况修改
-COMPONENT_MAP: list[dict[str, str | list[str]]]= [
+COMPONENT_MAP: list[dict[str, str | list[str]]] = [
     {
         "name": "主程序",
         "key": "MainApp",
@@ -77,3 +77,4 @@ API_LOGIN_URL = "https://private.qiyinbz.com:31415/permission-api/loginQyMac"
 SETTING_USER_URL = "https://admin.qiyinbz.com/permission/user/profile"
 SETTING_MSG_URL = "https://admin.qiyinbz.com/permission/index"
 FLOAT_QUO_URL = "https://admin.qiyinbz.com/quotate-page/quotate-pageIndex"
+DESIGN_CENTER_URL = "https://admin.qiyinbz.com/erp/design/designSheetList"
