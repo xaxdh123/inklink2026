@@ -470,7 +470,6 @@ class MainWorker(QObject):
                     [f"+{cur_file.place_way['more']} {cur_file.customer}"]
                 )
                 cur_file.place_way["index"] = _index + 1
-
             config["key"] = key
             print(_now(), "clr_addFiles", path_data, data, config)
             result: Dictionary[str, str] = self.clr_addFiles(path_data, data, config)
@@ -631,7 +630,9 @@ class MainWorker(QObject):
                     if file.place_way["deep_cuts"]:
                         deep = ",".join(file.place_way["deep_cuts"])
                         for i in range(1, len(file.place_way["deep_cuts"])):
-                            deep += "," + file.place_way["deep_cuts"][i].split("-")[1]
+                            deep += (
+                                "," + list(file.place_way["deep_cuts"])[i].split("-")[1]
+                            )
                     else:
                         deep = ""
                     deep = "-" + deep if deep else ""
@@ -648,7 +649,6 @@ class MainWorker(QObject):
                         with fitz.open() as new_doc:
                             new_doc.insert_pdf(doc, from_page=i, to_page=i)
                             new_doc.save(copy(f"_{i+1}"))
-
             try:
                 for _file in glob.iglob(
                     os.path.join(self.waiting_dir or "", file.place_way["no"] + "*.pdf")

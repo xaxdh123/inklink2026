@@ -4,39 +4,22 @@ import traceback
 import qdarktheme
 from PySide6 import QtWidgets
 
+import audit_center
 import customer_service
 import floating_plugin
+import layout_center
 import system_setting
 import third_party
 import design_center
 
-
-def run_customer():
-    customer_service.main()
-
-
-def run_float():
-    floating_plugin.main()
-
-
-def run_setting():
-    system_setting.main()
-
-
-def run_third():
-    third_party.main()
-
-
-def run_design():
-    design_center.main()
-
-
 MODES = {
-    "customer": run_customer,
-    "float": run_float,
-    "setting": run_setting,
-    "third": run_third,
-    "design": run_design,
+    "customer": customer_service.main,
+    "float": floating_plugin.main,
+    "setting": system_setting.main,
+    "third": third_party.main,
+    "design": design_center.main,
+    "audit": audit_center.main,
+    "layout": layout_center.main,
 }
 
 
@@ -45,12 +28,11 @@ def main():
     qdarktheme.setup_theme(theme="dark")
 
     if len(sys.argv) < 2:
-        print("Usage: exe_name [customer|float|setting|third|design]")
+        print("Usage: exe_name [customer|float|setting|third|design|audit|layout]")
         return
 
     mode = sys.argv[1]
     MODES.get(mode, lambda: print(f"Unknown mode: {mode}"))()
-
     sys.exit(app.exec())
 
 

@@ -4,35 +4,33 @@ from pathlib import Path
 import time
 from PySide6 import QtWidgets
 from trayapp import constant
+from web.get_module_urls import ModuleUrlsThreads
 from web.web_browser_widget import BrowserWidget
 from typing import Callable
+from trayapp import cos_utils
 
 
-from trayapp.cos_utils import (
-    object_exists,
-    get_single_file,
-    md5_single,
-    download_single_file,
-)
-
-
-class FP(BrowserWidget):
-
-    def __init__(
-        self,
-        token,
-        parent: QtWidgets.QWidget | None = None
-    ):
-        self.token = token or ""
-        profile_name = "floating_plugin"
+class FloatingPlugin(BrowserWidget):
+    def __init__(self, parent: QtWidgets.QWidget | None = None):
+        args = self.get_sys_args()
+        self.token = args.user_name or ""
+        profile_name = "FloatingPlugin"
         self.presets: dict[str, str | Callable[[], QtWidgets.QWidget]] = {
             "报价器": constant.FLOAT_QUO_URL
         }
-        super().__init__(self.presets, parent, profile_name,self.token)
-
+        super().__init__(self.presets, parent, profile_name, self.token)
         self.setWindowTitle("浮窗插件")
         self.last_request_time = 0
         self.register_js_handler("报价器", "quoteMethod", self.quoteMethod)
+        if args.jump_page:
+            self.jump(args.jump_page)
+        self.work = ModuleUrlsThreads(profile_name)
+        self.work.resp_name_urls.connect(self.add_more)
+        self.work.start()
+
+    def add_more(self, data):
+        for k, v in data.items():
+            self.add_feature(k, v)
 
     def parse_attr(self, attr):
         _res = {"name": attr["attr_name"], "value": attr["attr_value"]}
@@ -99,27 +97,26 @@ class FP(BrowserWidget):
         local_path = app_dir / constant.DIR_JAVASCRIPT
         remote_path = app_dir / constant.DIR_JAVASCRIPT_REMOTE
         file_name = data[0]["prod_code"] + ".js"
-
         if time.time() - self.last_request_time >= 60:
             remote_md5 = (
-                get_single_file(str(remote_path / file_name))["ETag"].strip('"')
-                if object_exists(str(remote_path / file_name))
+                cos_utils.get_single_file(str(remote_path / file_name))["ETag"].strip(
+                    '"'
+                )
+                if cos_utils.object_exists(str(remote_path / file_name))
                 else None
             )
             local_md5 = (
-                md5_single(local_path / file_name)
+                cos_utils.md5_single(local_path / file_name)
                 if os.path.exists(local_path / file_name)
                 else None
             )
             if remote_md5 and remote_md5 != local_md5:
-                download_single_file(remote_path / file_name, local_path)
+                cos_utils.download_single_file(remote_path / file_name, local_path)
             self.last_request_time = time.time()
 
         if not os.path.exists(local_path / file_name):
             self.call_js(
-                feature_name,
-                "window.setQuoteResult('报价中...');",
-                callback=print,
+                feature_name, "window.setQuoteResult('报价中...');", callback=print
             )
             return
 
@@ -138,7 +135,6 @@ class FP(BrowserWidget):
         if os.getenv("INKLINK_DEBUG") == "1":
             print(params)
 
-
         try:
             json_content = json.dumps(params, indent=4, ensure_ascii=False)
             js_content = f"window.xx = {json_content};\n"
@@ -147,11 +143,7 @@ class FP(BrowserWidget):
                 js_content += script
                 js_content += "\n"
             js_content += "window.setQuoteResult(result);"
-            self.call_js(
-                feature_name,
-                js_content,
-                callback=print,
-            )
+            self.call_js(feature_name, js_content, callback=print)
 
         except Exception as e:
             print(f"读取或执行 JS 文件时出错: {e}")

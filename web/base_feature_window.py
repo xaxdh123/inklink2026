@@ -271,8 +271,7 @@ class BaseFeatureWindow(QtWidgets.QWidget):
 
         # 在最后一个stretch之前插入按钮
         self.button_map[name] = btn
-        count = self.button_layout.count()
-        self.button_layout.insertWidget(count - 1, btn)  # 在stretch之前插入
+        self.button_layout.insertWidget(0, btn)
 
     def remove_feature(self, name: str):
         """移除功能"""

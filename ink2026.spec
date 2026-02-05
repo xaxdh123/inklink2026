@@ -106,6 +106,33 @@ exe_design = EXE(
     args=['design'],
 )
 
+exe_audit = EXE(
+    pyz,
+    a.scripts,
+    [],
+    exclude_binaries=True,
+    name='audit_center/audit_center',
+    debug=False,
+    strip=False,
+    upx=False,
+    console=False,
+    icon=['resources/icon.ico'],
+    args=['audit'],
+)
+
+exe_layout = EXE(
+    pyz,
+    a.scripts,
+    [],
+    exclude_binaries=True,
+    name='layout_center/layout_center',
+    debug=False,
+    strip=False,
+    upx=False,
+    console=False,
+    icon=['resources/icon.ico'],
+    args=['layout'],
+)
 # -----------------------
 # 4️⃣ 每个 exe 一个 COLLECT（独立环境）
 # -----------------------
@@ -157,4 +184,23 @@ coll_design = COLLECT(
     upx=False,
     upx_exclude=[],
     name='design_center',
+)
+
+coll_audit = COLLECT(
+    exe_audit,
+    a.binaries,
+    a.datas,
+    strip=False,
+    upx=False,
+    upx_exclude=[],
+    name='audit_center',
+)
+coll_layout= COLLECT(
+    exe_layout,
+    a.binaries,
+    a.datas,
+    strip=False,
+    upx=False,
+    upx_exclude=[],
+    name='layout_center',
 )

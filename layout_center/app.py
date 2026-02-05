@@ -1,5 +1,5 @@
 """
-客服中心应用
+设计中心应用
 基于 BrowserWidget 创建独立的客服中心窗口
 """
 
@@ -9,14 +9,15 @@ from pathlib import Path
 
 from PySide6 import QtWidgets
 
-from design_center.design_center import DesignCenter
+from layout_center.layout_center import LayoutCenter
+
 
 # 确保能正确导入父目录的模块
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 
 def main():
-    window = DesignCenter()
+    window = LayoutCenter()
     window.show()
 
 

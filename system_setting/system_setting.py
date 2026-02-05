@@ -2,26 +2,32 @@ from typing import Callable
 from PySide6 import QtWidgets
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from trayapp import constant
+from web.get_module_urls import ModuleUrlsThreads
 from web.web_browser_widget import BrowserWidget
 from system_setting.version_info import VersionInfo
 
 
-class Setting(BrowserWidget):
-
+class SystemSetting(BrowserWidget):
     def __init__(self, parent: QtWidgets.QWidget | None = None):
         args = self.get_sys_args()
         self.token = args.user_name or ""
-        profile_name = "system_setting"
-
+        profile_name = "SystemSetting"
         self.presets: dict[str, str | Callable[[], QtWidgets.QWidget]] = {
             "个人中心": constant.SETTING_USER_URL,
             "消息中心": constant.SETTING_MSG_URL,
-            "版本信息": lambda: VersionInfo(),
+            "版本信息": VersionInfo,
         }
         super().__init__(self.presets, parent, profile_name, self.token)
         self.scroll_message()
         if args.jump_page:
             self.jump(args.jump_page)
+        self.work = ModuleUrlsThreads(profile_name)
+        self.work.resp_name_urls.connect(self.add_more)
+        self.work.start()
+
+    def add_more(self, data):
+        for k, v in data.items():
+            self.add_feature(k, v)
 
     def scroll_message(self):
         def create_listen(name):

@@ -9,23 +9,25 @@ from pathlib import Path
 
 from PySide6 import QtWidgets
 
-from design_center.design_center import DesignCenter
+from audit_center.audit_center import AuditCenter
 
 # 确保能正确导入父目录的模块
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 
 def main():
-    window = DesignCenter()
+    window = AuditCenter()
     window.show()
 
 
 if __name__ == "__main__":
+
     try:
         # Apply dark theme if available
         app = QtWidgets.QApplication(sys.argv)
         qdarktheme.setup_theme(theme="dark")
         main()
         sys.exit(app.exec())
+
     except Exception:
         pass

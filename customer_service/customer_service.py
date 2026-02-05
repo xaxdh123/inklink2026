@@ -1,5 +1,4 @@
 from PySide6 import QtWidgets
-
 from trayapp import constant
 from typing import Callable
 from web.get_module_urls import ModuleUrlsThreads
@@ -7,7 +6,6 @@ from web.web_browser_widget import BrowserWidget
 
 
 class CustomerService(BrowserWidget):
-
     def __init__(self, parent: QtWidgets.QWidget | None = None):
         args = self.get_sys_args()
         self.token = args.user_name or ""
