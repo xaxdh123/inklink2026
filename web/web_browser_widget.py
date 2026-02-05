@@ -46,112 +46,12 @@ class BrowserWidget(BaseFeatureWindow):
             token=token or "",
         )
 
-        self._build_toolbar()
-
         # 初始化完成后，如果已经有页面，更新 current_view
         if self.stacked.count() > 0:
             current_widget = self.stacked.currentWidget()
             if isinstance(current_widget, QWebEngineView):
                 self.current_view = current_widget
                 self._connect_view(current_widget)
-                if self.address:
-                    self.address.setText(current_widget.url().toString())
-                    # self.address.setEnabled(True)
-
-    def _build_toolbar(self):
-        """构建工具栏"""
-        # 在按钮栏和stacked之间插入工具栏
-        toolbar_layout = QtWidgets.QHBoxLayout()
-        toolbar_layout.setContentsMargins(0, 0, 0, 0)
-        toolbar_layout.setSpacing(4)
-
-        # 前进、后退、刷新按钮
-        self.back_btn = QtWidgets.QToolButton()
-        self.back_btn.setText("◀")
-        self.back_btn.setToolTip("后退")
-        self.back_btn.clicked.connect(self._on_back)
-        toolbar_layout.addWidget(self.back_btn)
-
-        self.forward_btn = QtWidgets.QToolButton()
-        self.forward_btn.setText("▶")
-        self.forward_btn.setToolTip("前进")
-        self.forward_btn.clicked.connect(self._on_forward)
-        toolbar_layout.addWidget(self.forward_btn)
-
-        self.reload_btn = QtWidgets.QToolButton()
-        self.reload_btn.setText("⟳")
-        self.reload_btn.setToolTip("刷新")
-        self.reload_btn.clicked.connect(self._on_reload)
-        toolbar_layout.addWidget(self.reload_btn)
-
-        toolbar_layout.addSpacing(6)
-
-        # 地址栏
-        self.address = QtWidgets.QLineEdit()
-        self.address.setPlaceholderText("输入URL并按Enter")
-        self.address.returnPressed.connect(self._on_go)
-        self.address.setEnabled(False)  # 初始禁用，有网页视图时启用
-        toolbar_layout.addWidget(self.address, 1)
-
-        # Go按钮
-        self.go_btn = QtWidgets.QToolButton()
-        self.go_btn.setText("Go")
-        self.go_btn.clicked.connect(self._on_go)
-        toolbar_layout.addWidget(self.go_btn)
-
-        # 进度条
-        self.progress = QtWidgets.QProgressBar()
-        self.progress.setMaximumHeight(2)
-        self.progress.setTextVisible(False)
-        self.progress.setRange(0, 100)
-        self.progress.setValue(0)
-
-        # 创建工具栏容器
-        toolbar_container = QtWidgets.QFrame()
-        toolbar_container.setLayout(toolbar_layout)
-        toolbar_container.setStyleSheet("QFrame { background-color: #2b2b2b; }")
-
-        # 插入到布局中（按钮栏之后，stacked之前）
-        main_layout: QtWidgets.QLayout = self.layout() or QtWidgets.QVBoxLayout()
-        self.button_layout.addWidget(toolbar_container)
-        if isinstance(main_layout, QtWidgets.QVBoxLayout):
-            main_layout.insertWidget(1, self.progress)
-
-    def _on_back(self):
-        """后退"""
-        if self.current_view:
-            self.current_view.back()
-        print(self.current_view, "_on_back")
-
-    def _on_forward(self):
-        """前进"""
-        if self.current_view:
-            self.current_view.forward()
-        print(self.current_view, "_on_forward")
-
-    def _on_reload(self):
-        """刷新"""
-        if self.current_view:
-            self.current_view.reload()
-        print(self.current_view, "_on_reload")
-
-    def _on_go(self):
-        """跳转到地址栏的URL"""
-        if not self.current_view:
-            return
-
-        text = self.address.text().strip()
-        if not text:
-            return
-
-        # 自动添加协议
-        if not text.startswith(("http://", "https://")):
-            text = "https://" + text
-
-        try:
-            self.current_view.setUrl(QUrl(text))
-        except Exception as e:
-            print(f"加载URL错误：{e}")
 
     def _switch_to_feature(self, name: str):
         """重写切换功能，更新当前视图和地址栏"""
@@ -176,15 +76,9 @@ class BrowserWidget(BaseFeatureWindow):
             except:
                 pass
             self._connect_view(current_widget)
-            # 更新地址栏
-            if getattr(self, "address", ""):
-                self.address.setText(current_widget.url().toString())
-                # self.address.setEnabled(True)
+
         else:
             self.current_view = None
-            if getattr(self, "address", ""):
-                self.address.clear()
-                self.address.setEnabled(False)
 
     def _connect_view(self, view: QWebEngineView):
         """连接视图信号"""
@@ -203,7 +97,7 @@ class BrowserWidget(BaseFeatureWindow):
     def _on_url_changed(self, qurl: QUrl):
         """URL改变时更新地址栏"""
         try:
-            self.address.setText(qurl.toString())
+            self.title_bar.url_bar.setText(qurl.toString())
         except Exception as e:
             print(f"更新URL错误：{e}")
 
