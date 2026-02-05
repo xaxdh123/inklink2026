@@ -12,25 +12,19 @@ class ThirdParty(BrowserWidget):
 
     def __init__(self, parent: QtWidgets.QWidget | None = None):
         args = self.get_sys_args()
-        self.token = args.user_name or ""
+        self.token = args.get("user_name", None) or ""
         profile_name = "ThirdParty"
         self.presets: dict[str, str | Callable[[], QtWidgets.QWidget]] = {
             "盛大报价": "https://www.sd2000.com/Login"
         }
         super().__init__(self.presets, parent, profile_name, self.token)
         self.setWindowTitle("三方工具")
-        if args.jump_page:
-            self.jump(args.jump_page)
+        if "jump_page" in args:
+            self._switch_to_feature(args["jump_page"])
         self.work = ModuleUrlsThreads(profile_name)
         self.work.resp_name_urls.connect(self.add_more)
         self.work.start()
 
-    def openDesignFile(self, data):
-        print(data)
-
     def add_more(self, data):
         for k, v in data.items():
             self.add_feature(k, v)
-
-    def jump(self, name):
-        self._switch_to_feature(name)

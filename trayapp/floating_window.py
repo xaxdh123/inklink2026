@@ -1,4 +1,5 @@
 from operator import is_
+import subprocess
 from PySide6 import QtCore, QtWidgets
 from pathlib import Path
 from system_setting.UpdateCheckWorker import UpdateCheckWorker
@@ -90,6 +91,9 @@ class FloatingWindow(QtWidgets.QWidget):
             self._msg_label.clicked.connect(
                 lambda: self.on_feature(constant.COMPONENT_MAP[-1])
             )
+        if key == "MainApp":
+            cur = self.settings.value(f"{key}/version", "0.0.0")
+            self._version_label.setText(f"inklink-{cur}{'*'if is_ready else ''}")
 
     def _build_ui(self):
         frame = QtWidgets.QFrame(self)
@@ -137,7 +141,6 @@ class FloatingWindow(QtWidgets.QWidget):
         v.addWidget(self._version_label, alignment=QtCore.Qt.AlignmentFlag.AlignCenter)
 
     def on_feature(self, item):
-
         app_dir = Path(__file__).parent.parent
         exe_path = app_dir / constant.DIR_BIN / item["sub_dir"] / item["exe"]
 
@@ -153,7 +156,9 @@ class FloatingWindow(QtWidgets.QWidget):
 
         # 启动exe（写入token到配置文件并启动）
         try:
-            launch_process(str(exe_path), ["--user", self.token], detach=True)
+            launch_process(
+                str(exe_path), [item["key"], "--user", self.token], detach=True
+            )
         except FileNotFoundError:
             QtWidgets.QMessageBox.critical(
                 self, "启动失败", f"无法找到exe文件：\n{exe_path}"

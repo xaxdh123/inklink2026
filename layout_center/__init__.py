@@ -1,3 +1,3 @@
-from design_center import app
+from layout_center import app
 
 main = app.main

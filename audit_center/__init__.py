@@ -1,3 +1,3 @@
-from customer_service import app
+from audit_center import app
 
 main = app.main

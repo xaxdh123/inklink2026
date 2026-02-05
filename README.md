@@ -26,7 +26,7 @@ python main.py
 | 三方工具 | `third_party` | `third_party.exe` | `third_party/README.md` |
 | 排版中心 | `layout_center` | `layout_center.exe` | `layout_center/README.md` |
 | 审核中心 | `audit_center` | `audit_center.exe` | `audit_center/README.md` |
-| 系统设置 | `system_settings` | `system_settings.exe` | 代码在 `system_setting/`（目录名与配置不一致） |
+| 系统设置 | `system_setting` | `system_setting.exe` | 代码在 `system_setting/`（目录名与配置不一致） |
 
 ## 打包/运行路径
 - 打包输出目录：`./bin`

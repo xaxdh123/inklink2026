@@ -10,7 +10,7 @@ from system_setting.version_info import VersionInfo
 class SystemSetting(BrowserWidget):
     def __init__(self, parent: QtWidgets.QWidget | None = None):
         args = self.get_sys_args()
-        self.token = args.user_name or ""
+        self.token = args.get("user_name", None) or ""
         profile_name = "SystemSetting"
         self.presets: dict[str, str | Callable[[], QtWidgets.QWidget]] = {
             "个人中心": constant.SETTING_USER_URL,
@@ -19,8 +19,8 @@ class SystemSetting(BrowserWidget):
         }
         super().__init__(self.presets, parent, profile_name, self.token)
         self.scroll_message()
-        if args.jump_page:
-            self.jump(args.jump_page)
+        if "jump_page" in args:
+            self._switch_to_feature(args["jump_page"])
         self.work = ModuleUrlsThreads(profile_name)
         self.work.resp_name_urls.connect(self.add_more)
         self.work.start()
@@ -39,6 +39,3 @@ class SystemSetting(BrowserWidget):
                     )
 
         self.create_page_signal.connect(create_listen)
-
-    def jump(self, name):
-        self._switch_to_feature(name)

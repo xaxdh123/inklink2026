@@ -45,9 +45,9 @@ exe_customer = EXE(
     debug=False,
     strip=False,
     upx=False,
-    console=False,
+    console=True,
     icon=['resources/icon.ico'],
-    args=['customer'],
+    args=['CustomerService'],
 )
 
 exe_float = EXE(
@@ -61,7 +61,7 @@ exe_float = EXE(
     upx=False,
     console=False,
     icon=['resources/icon.ico'],
-    args=['float'],
+    args=['FloatingPlugin'],
 )
 
 exe_setting = EXE(
@@ -75,7 +75,7 @@ exe_setting = EXE(
     upx=False,
     console=False,
     icon=['resources/icon.ico'],
-    args=['setting'],
+    args=['SystemSetting'],
 )
 
 exe_third = EXE(
@@ -89,7 +89,7 @@ exe_third = EXE(
     upx=False,
     console=False,
     icon=['resources/icon.ico'],
-    args=['third'],
+    args=['ThirdParty'],
 )
 
 exe_design = EXE(
@@ -103,7 +103,7 @@ exe_design = EXE(
     upx=False,
     console=False,
     icon=['resources/icon.ico'],
-    args=['design'],
+    args=['DesignCenter'],
 )
 
 exe_audit = EXE(
@@ -117,7 +117,7 @@ exe_audit = EXE(
     upx=False,
     console=False,
     icon=['resources/icon.ico'],
-    args=['audit'],
+    args=['AuditCenter'],
 )
 
 exe_layout = EXE(
@@ -131,7 +131,7 @@ exe_layout = EXE(
     upx=False,
     console=False,
     icon=['resources/icon.ico'],
-    args=['layout'],
+    args=['LayoutCenter'],
 )
 # -----------------------
 # 4️⃣ 每个 exe 一个 COLLECT（独立环境）

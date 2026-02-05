@@ -13,13 +13,13 @@ import third_party
 import design_center
 
 MODES = {
-    "customer": customer_service.main,
-    "float": floating_plugin.main,
-    "setting": system_setting.main,
-    "third": third_party.main,
-    "design": design_center.main,
-    "audit": audit_center.main,
-    "layout": layout_center.main,
+    "CustomerService": customer_service.main,
+    "FloatingPlugin": floating_plugin.main,
+    "SystemSetting": system_setting.main,
+    "ThirdParty": third_party.main,
+    "DesignCenter": design_center.main,
+    "AuditCenter": audit_center.main,
+    "LayoutCenter": layout_center.main,
 }
 
 

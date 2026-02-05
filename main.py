@@ -1,13 +1,13 @@
+import traceback
 from trayapp.tray_app import TrayApp
 import sys
-
+import qdarktheme
 
 if __name__ == "__main__":
-    app = TrayApp(sys.argv)
     try:
-        import pyqtdarktheme
-
-        pyqtdarktheme.setup_theme(app, theme="dark")
+        tray = TrayApp(sys.argv)
+        qdarktheme.setup_theme(theme="dark")
+        sys.exit(tray.exec())
     except Exception:
+        traceback.print_exc()
         pass
-    sys.exit(app.exec())

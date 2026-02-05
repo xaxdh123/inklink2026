@@ -65,9 +65,9 @@ COMPONENT_MAP: list[dict[str, str | list[str]]] = [
     },
     {
         "name": "系统设置",
-        "key": "SystemSettings",
-        "sub_dir": "system_settings",
-        "exe": "system_settings.exe",
+        "key": "SystemSetting",
+        "sub_dir": "system_setting",
+        "exe": "system_setting.exe",
         "show_type": ["tray"],
     },
 ]

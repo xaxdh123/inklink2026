@@ -3,6 +3,7 @@
 保留原有的浏览器功能（工具栏、地址栏、前进后退等）
 """
 
+import traceback
 from typing import Callable
 from PySide6 import QtWidgets
 from PySide6.QtWebEngineWidgets import QWebEngineView
@@ -218,16 +219,21 @@ class BrowserWidget(BaseFeatureWindow):
         parser.add_argument("--user", dest="user_name", help="指定操作用户")
         parser.add_argument("--jump", dest="jump_page", help="指定跳转页面")
         # 3. 解析参数
-        args = parser.parse_args()
+        args, _ = parser.parse_known_args()
         # 4. 使用参数
-        if args.user_name:
-            print(f"当前登录用户token: {args.user_name}")
+        result = {
+            "user_name": args.user_name or "",
+            "jump_page": args.jump_page or "",
+        }
+
+        if result["user_name"]:
+            print(f"当前登录用户token: {result['user_name']}")
         else:
             print("未检测到 --user 参数")
 
-        # 4. 使用参数
-        if args.jump_page:
-            print(f"当前跳转页面: {args.jump_page}")
+        if result["jump_page"]:
+            print(f"当前跳转页面: {result['jump_page']}")
         else:
             print("未检测到 --jump 参数")
-        return args
+
+        return result

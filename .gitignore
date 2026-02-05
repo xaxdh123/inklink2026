@@ -5,7 +5,6 @@ build/*
 dist/*
 **/__pycache__/*
 .codebuddy/*
-.vscode/*
 .conda/*
 bin/updater.bat
 bin/**/*

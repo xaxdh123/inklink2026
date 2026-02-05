@@ -1,4 +1,4 @@
-from importlib.resources import contents
+import sys
 import traceback
 from PySide6 import QtWidgets, QtGui
 
@@ -7,6 +7,9 @@ from trayapp.login_window import LoginWindow
 from trayapp.floating_window import FloatingWindow
 from trayapp.launcher_utils import launch_process
 from pathlib import Path
+
+# 确保能正确导入父目录的模块
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 
 class TrayApp(QtWidgets.QApplication):
@@ -56,7 +59,9 @@ class TrayApp(QtWidgets.QApplication):
                         / current_item["exe"]
                     )
                     if exe_path.exists():
-                        launch_process(str(exe_path), ["--user", self.token])
+                        launch_process(
+                            str(exe_path), [item["key"], "--user", self.token]
+                        )
                     else:
                         QtWidgets.QMessageBox.warning(
                             None,
