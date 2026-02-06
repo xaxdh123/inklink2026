@@ -15,7 +15,6 @@ class DesignCenter(BrowserWidget):
         }
         super().__init__(self.presets, parent, profile_name, self.token)
         self.register_js_handler("设计中心", "openDesignFile", self.openDesignFile)
-        self.setWindowTitle("设计中心")
         if "jump_page" in args:
             self._switch_to_feature(args["jump_page"])
         self.work = ModuleUrlsThreads(profile_name)

@@ -14,7 +14,6 @@ class CustomerService(BrowserWidget):
             "报价器": constant.FLOAT_QUO_URL
         }
         super().__init__(self.presets, parent, profile_name, self.token)
-        self.setWindowTitle("客服中心")
         if "jump_page" in args:
             self._switch_to_feature(args["jump_page"])
         self.work = ModuleUrlsThreads(profile_name)

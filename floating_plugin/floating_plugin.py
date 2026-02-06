@@ -19,7 +19,6 @@ class FloatingPlugin(BrowserWidget):
             "报价器": constant.FLOAT_QUO_URL
         }
         super().__init__(self.presets, parent, profile_name, self.token)
-        self.setWindowTitle("浮窗插件")
         self.last_request_time = 0
         self.register_js_handler("报价器", "quoteMethod", self.quoteMethod)
         if "jump_page" in args:
@@ -28,6 +27,7 @@ class FloatingPlugin(BrowserWidget):
         self.work.resp_name_urls.connect(self.add_feature)
         self.work.resp_resize.connect(self.resize)
         self.work.start()
+        self.handle_follow()
 
     def parse_attr(self, attr):
         _res = {"name": attr["attr_name"], "value": attr["attr_value"]}
@@ -144,3 +144,6 @@ class FloatingPlugin(BrowserWidget):
 
         except Exception as e:
             print(f"读取或执行 JS 文件时出错: {e}")
+
+    def handle_follow(self):
+        pass

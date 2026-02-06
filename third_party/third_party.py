@@ -18,7 +18,6 @@ class ThirdParty(BrowserWidget):
             "盛大报价": "https://www.sd2000.com/Login"
         }
         super().__init__(self.presets, parent, profile_name, self.token)
-        self.setWindowTitle("三方工具")
         if "jump_page" in args:
             self._switch_to_feature(args["jump_page"])
         self.work = ModuleUrlsThreads(profile_name)

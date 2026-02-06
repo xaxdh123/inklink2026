@@ -17,7 +17,6 @@ class LayoutCenter(BrowserWidget):
             "打样手排": SlowCom,
         }
         super().__init__(self.presets, parent, profile_name, self.token)
-        self.setWindowTitle("排版中心")
         if "jump_page" in args:
             self._switch_to_feature(args["jump_page"])
         self.work = ModuleUrlsThreads(profile_name)

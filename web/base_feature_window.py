@@ -183,14 +183,13 @@ class BaseFeatureWindow(QtWidgets.QWidget):
         features: dict[str, str | Callable[[], QtWidgets.QWidget]] | None = None,
         profile_name: str = "default",
         parent: QtWidgets.QWidget | None = None,
-        window_title: str = "功能窗口",
         token="",
     ):
         super().__init__(parent)
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.Window)
         self.setAttribute(Qt.WA_TranslucentBackground)
 
-        self.setWindowTitle(window_title)
+        self.setWindowTitle(profile_name)
         self.token = token
         self.features: dict[str, str | Callable[[], QtWidgets.QWidget]] = dict(
             features or {}
@@ -203,7 +202,7 @@ class BaseFeatureWindow(QtWidgets.QWidget):
         self.channel_bridges: dict[str, WebChannelBridge] = {}
         self._drag_pos = QPoint()
 
-        self._build_ui(window_title)
+        self._build_ui(profile_name)
         self._setup_features()
 
     def _build_ui(self, title):

@@ -42,7 +42,6 @@ class BrowserWidget(BaseFeatureWindow):
             features=presets or {},
             profile_name=profile_name,
             parent=parent,
-            window_title="InkLink Browser",
             token=token or "",
         )
 
