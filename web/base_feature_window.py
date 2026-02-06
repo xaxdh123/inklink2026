@@ -455,7 +455,9 @@ class BaseFeatureWindow(QtWidgets.QWidget):
             self.current_page.page().setDevToolsPage(dev_view.page())
             dev_win = QtWidgets.QDialog(self)
             dev_win.resize(1000, 600)
-            QtWidgets.QVBoxLayout(dev_win).addWidget(dev_view)
+            layout = QtWidgets.QVBoxLayout(dev_win)
+            layout.setContentsMargins(0, 0, 0, 0)
+            layout.addWidget(dev_view)
             dev_win.show()
 
     def closeEvent(self, event):
