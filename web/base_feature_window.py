@@ -347,11 +347,9 @@ class BaseFeatureWindow(QtWidgets.QWidget):
             self.title_bar.url_bar.setText("Native Widget")
 
     def _ensure_token_param(self, url: str) -> str:
-        if not self.token:
-            return url
         parts = urlsplit(url)
         q = parse_qsl(parts.query, keep_blank_values=True)
-        if not any(k == "token" for k, _ in q):
+        if self.token and not any(k == "token" for k, _ in q):
             q.append(("token", self.token))
         if not any(k == "no_layout" for k, _ in q):
             q.append(("no_layout", "1"))

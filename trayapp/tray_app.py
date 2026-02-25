@@ -48,33 +48,9 @@ class TrayApp(QtWidgets.QApplication):
                 continue
             name = item["name"]
             act = menu.addAction(name)
-
-            def _launch_web_browser(checked, current_item=item):
-                try:
-                    app_dir = Path(__file__).parent.parent
-                    exe_path = (
-                        app_dir
-                        / constant.DIR_BIN
-                        / current_item["sub_dir"]
-                        / current_item["exe"]
-                    )
-                    if exe_path.exists():
-                        launch_process(
-                            str(exe_path), [item["key"], "--user", self.token]
-                        )
-                    else:
-                        QtWidgets.QMessageBox.warning(
-                            None,
-                            "文件未找到",
-                            f"{name} exe未找到：\n{exe_path}\n\n请先构建exe文件。",
-                        )
-                except Exception as e:
-                    traceback.print_exc()
-                    QtWidgets.QMessageBox.critical(
-                        None, "启动失败", f"无法启动exe：\n{str(e)}"
-                    )
-
-            act.triggered.connect(_launch_web_browser)
+            act.triggered.connect(
+                lambda _, i=item: launch_process(i, ["--user", self.token])
+            )
 
         menu.addSeparator()
         quit_act = menu.addAction("退出")

@@ -1,6 +1,7 @@
 from PySide6 import QtWidgets
 from layout_center.ProofTS.comb.oneCom import OneComb
 from layout_center.ProofTS.manual.slowCom import SlowCom
+from layout_center.Roll_Splice.run import RollWidget
 from web.get_module_urls import ModuleUrlsThreads
 from web.web_browser_widget import BrowserWidget
 
@@ -15,6 +16,7 @@ class LayoutCenter(BrowserWidget):
         self.presets: dict[str, str | Callable[[], QtWidgets.QWidget]] = {
             "打样专版": OneComb,
             "打样手排": SlowCom,
+            "卷筒拼版":RollWidget,
         }
         super().__init__(self.presets, parent, profile_name, self.token)
         if "jump_page" in args:

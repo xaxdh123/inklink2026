@@ -5,6 +5,13 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Roll_Splice",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "layout_center/Roll_Splice/run.py",
+            "console": "integratedTerminal"
+        },
+        {
             "name": "proofts",
             "type": "debugpy",
             "request": "launch",

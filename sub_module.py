@@ -1,4 +1,5 @@
 # sub_module.py
+import logging
 import sys
 import traceback
 import qdarktheme
@@ -23,7 +24,28 @@ MODES = {
 }
 
 
+# 2. 核心：接管全局异常（这是防止闪退找不到原因的关键）
+def handle_exception(exc_type, exc_value, exc_traceback):
+    if issubclass(exc_type, KeyboardInterrupt):
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+        return
+    LOG_FILE = "except_log.txt"
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format="%(asctime)s - %(levelname)s - %(message)s",
+        handlers=[
+            logging.FileHandler(LOG_FILE, encoding="utf-8"),  # 写入文件
+            logging.StreamHandler(sys.stdout),  # 同时输出到控制台
+        ],
+    )
+    error_msg = "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
+    from PySide6.QtWidgets import QMessageBox
+
+    QMessageBox.critical(None, "程序崩溃", f"详细信息已写入 {LOG_FILE}")
+
+
 def main():
+    sys.excepthook = handle_exception
     app = QtWidgets.QApplication(sys.argv)
     qdarktheme.setup_theme(theme="dark")
 

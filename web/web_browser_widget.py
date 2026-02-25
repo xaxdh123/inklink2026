@@ -67,10 +67,6 @@ class BrowserWidget(BaseFeatureWindow):
             except:
                 pass
             try:
-                current_widget.loadProgress.disconnect()
-            except:
-                pass
-            try:
                 current_widget.loadFinished.disconnect()
             except:
                 pass
@@ -82,16 +78,6 @@ class BrowserWidget(BaseFeatureWindow):
     def _connect_view(self, view: QWebEngineView):
         """连接视图信号"""
         view.urlChanged.connect(self._on_url_changed)
-        view.loadProgress.connect(
-            lambda v: self.progress.setValue(v) if self.progress else None
-        )
-        view.loadFinished.connect(
-            lambda ok: (
-                None
-                if not self.progress
-                else self.progress.setValue(100) if ok else self.progress.setValue(0)
-            )
-        )
 
     def _on_url_changed(self, qurl: QUrl):
         """URL改变时更新地址栏"""

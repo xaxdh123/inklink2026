@@ -1,5 +1,6 @@
 from operator import is_
 import subprocess
+import sys
 from PySide6 import QtCore, QtWidgets
 from pathlib import Path
 from system_setting.UpdateCheckWorker import UpdateCheckWorker
@@ -89,7 +90,9 @@ class FloatingWindow(QtWidgets.QWidget):
                 "color: #67c23a; font-weight: bold; font-size: 9px;background:none;"
             )
             self._msg_label.clicked.connect(
-                lambda: self.on_feature(constant.COMPONENT_MAP[-1])
+                lambda: launch_process(
+                    constant.COMPONENT_MAP[-1], ["--user", self.token], detach=True
+                )
             )
         if key == "MainApp":
             cur = GLOB_CONFIG.value(f"{key}/version", "0.0.0")
@@ -122,7 +125,11 @@ class FloatingWindow(QtWidgets.QWidget):
         )
         head_layout.addLayout(_head_1, 1)
         _setting = QtWidgets.QPushButton("🛠")
-        _setting.clicked.connect(lambda: self.on_feature(constant.COMPONENT_MAP[-1]))
+        _setting.clicked.connect(
+            lambda: launch_process(
+                constant.COMPONENT_MAP[-1], ["--user", self.token], detach=True
+            )
+        )
         head_layout.addWidget(_setting, alignment=QtCore.Qt.AlignmentFlag.AlignTop)
         v.addLayout(head_layout)
         v.addStretch()
@@ -132,41 +139,17 @@ class FloatingWindow(QtWidgets.QWidget):
         for i, item in enumerate(show_items):
             b = QtWidgets.QPushButton(item["name"])
             # 修复lambda闭包问题：需要捕获exe的值，而不是引用
-            b.clicked.connect(lambda checked, _i=item: self.on_feature(_i))
+            b.clicked.connect(
+                lambda _, _i=item: launch_process(
+                    _i, ["--user", self.token], detach=True
+                )
+            )
             vg.addWidget(b, i % 3, i // 3)
         v.addLayout(vg)
         self._version_label = QtWidgets.QLabel("inklink-v1.0.0")
         self._version_label.setObjectName("versionLabel")
         v.addStretch()
         v.addWidget(self._version_label, alignment=QtCore.Qt.AlignmentFlag.AlignCenter)
-
-    def on_feature(self, item):
-        app_dir = Path(__file__).parent.parent
-        exe_path = app_dir / constant.DIR_BIN / item["sub_dir"] / item["exe"]
-
-        # 检查文件是否存在
-        if not exe_path.exists():
-            QtWidgets.QMessageBox.warning(
-                self,
-                "文件未找到",
-                f"未找到对应的exe文件：\n{exe_path}\n\n"
-                f"请确保已打包对应的功能模块。",
-            )
-            return
-
-        # 启动exe（写入token到配置文件并启动）
-        try:
-            launch_process(
-                str(exe_path), [item["key"], "--user", self.token], detach=True
-            )
-        except FileNotFoundError:
-            QtWidgets.QMessageBox.critical(
-                self, "启动失败", f"无法找到exe文件：\n{exe_path}"
-            )
-        except Exception as e:
-            QtWidgets.QMessageBox.critical(
-                self, "启动失败", f"无法启动 '{item['name']}'：\n{str(e)}"
-            )
 
     def showEvent(self, event):
         super().showEvent(event)

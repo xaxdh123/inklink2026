@@ -16,3 +16,4 @@ layout_center/ProofTS/main.dist/*
 layout_center/ProofTS/utils/__pycache__/*
 layout_center/ProofTS/utils/__pycache__/__init__.cpython-311.pyc
 layout_center/ProofTS/output.log
+.venv/*
