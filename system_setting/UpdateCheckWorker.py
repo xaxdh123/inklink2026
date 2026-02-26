@@ -30,6 +30,15 @@ class UpdateCheckWorker(QThread):
         self.running = True
         self.wait_file_list = {}
 
+    @staticmethod
+    def _safe_int(value, default=0):
+        try:
+            if value is None:
+                return default
+            return int(value)
+        except (TypeError, ValueError):
+            return default
+
     def _get_file_list(self, comp, new_version):
         """
         核心逻辑修改：
@@ -89,17 +98,28 @@ class UpdateCheckWorker(QThread):
             try:
                 status_text = ""
                 key = comp["key"]
-                current_ver_code = self.settings.value(f"{key}/versionCode", 0)
+                current_ver_code = self._safe_int(
+                    self.settings.value(f"{key}/versionCode", 0), 0
+                )
                 current_ver = self.settings.value(f"{key}/version", "0.0.0")
                 r_ver = get_app_version_info(key)
 
-                if r_ver["versionCode"] > current_ver_code:
+                if not r_ver or "versionCode" not in r_ver:
+                    text = f' {comp["name"]} 获取版本信息失败'
+                    status_text = "获取版本信息失败"
+                else:
+                    r_ver_code = self._safe_int(r_ver.get("versionCode", 0), 0)
+                    r_ver_name = r_ver.get("version", "0.0.0")
+
+                if status_text:
+                    pass
+                elif r_ver_code > current_ver_code:
                     if self.auto_download:
                         self._get_file_list(comp, r_ver)
                         text = f' {comp["name"]} 获取文件列表中...'
                     else:
-                        text = f' {comp["name"]} 获取下载信息 {r_ver["version"]}'
-                        status_text = f"最新:{r_ver['versionCode']}[{r_ver['version']}]"
+                        text = f' {comp["name"]} 获取下载信息 {r_ver_name}'
+                        status_text = f"最新:{r_ver_code}[{r_ver_name}]"
                 else:
                     text = f' {comp["name"]} 获取版本信息 无更新'
                     status_text = f"当前:{current_ver_code}[{current_ver}]"
