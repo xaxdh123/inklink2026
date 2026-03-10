@@ -7,10 +7,16 @@ echo ================================
 echo check Tools:  pyinstaller exist ...
 echo ================================
 REM 2️⃣ 确保 PyInstaller 安装
-pip show pyinstaller >nul 2>&1
+python -m PyInstaller --version >nul 2>&1
 if errorlevel 1 (
-    echo PyInstaller not found. Installing...
-    pip install pyinstaller
+    echo PyInstaller not invocable by this Python. Reinstalling...
+    pip install --force-reinstall pyinstaller
+    python -m PyInstaller --version >nul 2>&1
+    if errorlevel 1 (
+        echo ERROR: PyInstaller still not available after reinstall. Aborting.
+        pause
+        exit /b 1
+    )
 )
 
 echo ================================
@@ -27,9 +33,11 @@ REM 3️⃣ 打包
 echo.
 echo Running PyInstaller main exe...
 python -m PyInstaller main.spec --distpath bin
-
-
-
+if errorlevel 1 (
+    echo Build of main.exe failed!
+    pause
+    exit /b 1
+)
 
 
 echo ================================
