@@ -1,26 +1,32 @@
 # encoding=utf-8
-import wmi
 import time
 import uuid
 import random
+import os
+import platform
 from PySide6 import QtCore, QtWidgets, QtGui
-
 from trayapp import constant
 
-
 def get_mac_address():
-
+    """
+    跨平台获取 MAC 地址和硬件标识。
+    """
     mac = uuid.UUID(int=uuid.getnode()).hex[-12:].upper()
-    for board in wmi.WMI().Win32_BaseBoard():
-        if board.SerialNumber:
-            mac += board.SerialNumber
-            break
+    
+    # 仅在 Windows 下尝试获取主板序列号
+    if platform.system() == "Windows":
+        try:
+            import wmi
+            for board in wmi.WMI().Win32_BaseBoard():
+                if board.SerialNumber:
+                    mac += board.SerialNumber
+                    break
+        except Exception:
+            pass
     return str(mac)
-
 
 class LoginWorker(QtCore.QThread):
     finished = QtCore.Signal(bool, object)
-
     def __init__(self, mac: str, parent=None):
         super().__init__(parent)
         self.mac = mac
@@ -29,9 +35,7 @@ class LoginWorker(QtCore.QThread):
         time.sleep(0.3)
         try:
             if constant.API_LOGIN_URL:
-
                 import requests
-
                 resp = requests.get(
                     constant.API_LOGIN_URL, params={"mac": self.mac}, timeout=6
                 )
@@ -42,100 +46,100 @@ class LoginWorker(QtCore.QThread):
                         self.finished.emit(True, token)
                         return
                 self.finished.emit(False, resp.text)
-                return
             else:
-                time.sleep(1.5)
-                if random.random() > 0.4:
-                    token = f"mock-token-{self.mac.replace(':','')[:8]}"
-                    self.finished.emit(True, token)
-                else:
-                    self.finished.emit(False, "mock login failed")
+                # Mock 登录逻辑
+                time.sleep(1.0)
+                token = f"mock-token-{self.mac[:8]}"
+                self.finished.emit(True, token)
         except Exception as e:
             self.finished.emit(False, str(e))
 
-
-class ResourceLoader(QtCore.QThread):
-    finished = QtCore.Signal()
-
-    def run(self):
-        time.sleep(4)
-        self.finished.emit()
-
-
 class LoginWindow(QtWidgets.QWidget):
     login_success = QtCore.Signal(str)
-
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("登录")
-        self.setFixedSize(240, 160)
+        self.setWindowTitle("InkLink 登录")
+        self.setFixedSize(320, 240)
         self.mac = get_mac_address()
         self.worker = LoginWorker(self.mac)
+        self._apply_style()
         self._build_ui()
+        QtCore.QTimer.singleShot(500, self.start_login)
 
-        # Start resource loader in background (non-blocking)
-        self.loader = ResourceLoader()
-        self.loader.start()
-
-        # Start login automatically
-        QtCore.QTimer.singleShot(50, self.start_login)
+    def _apply_style(self):
+        self.setStyleSheet("""
+            QWidget {
+                background-color: #1e1e1e;
+                color: #ffffff;
+                font-family: "Segoe UI", "Microsoft YaHei";
+            }
+            QPushButton {
+                background-color: #3d3d3d;
+                border: none;
+                padding: 8px;
+                border-radius: 4px;
+            }
+            QPushButton:hover {
+                background-color: #4d4d4d;
+            }
+            QPushButton:pressed {
+                background-color: #2d2d2d;
+            }
+            QProgressBar {
+                border: 1px solid #3d3d3d;
+                border-radius: 6px;
+                text-align: center;
+            }
+            QProgressBar::chunk {
+                background-color: #0078d4;
+                border-radius: 5px;
+            }
+        """)
 
     def _build_ui(self):
         layout = QtWidgets.QVBoxLayout(self)
+        layout.setContentsMargins(30, 30, 30, 30)
+        layout.setSpacing(15)
 
-        title = QtWidgets.QLabel("<b>欢迎，正在登录中…</b>")
+        title = QtWidgets.QLabel("<b>InkLink 2026</b>")
+        title.setStyleSheet("font-size: 18px; color: #0078d4;")
         title.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(title)
 
-        self.status_label = QtWidgets.QLabel("准备登录")
+        self.status_label = QtWidgets.QLabel("正在验证设备身份...")
         self.status_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self.status_label)
 
         self.progress = QtWidgets.QProgressBar()
-        self.progress.setTextVisible(False)
-        self.progress.setFixedHeight(12)
+        self.progress.setFixedHeight(10)
         self.progress.setRange(0, 0)
         layout.addWidget(self.progress)
 
-        h = QtWidgets.QHBoxLayout()
-        self.copy_btn = QtWidgets.QPushButton("复制 MAC")
-        self.copy_btn.clicked.connect(self.copy_mac)
-        self.copy_btn.setEnabled(False)
-        h.addWidget(self.copy_btn)
-
-        self.retry_btn = QtWidgets.QPushButton("重试")
+        self.retry_btn = QtWidgets.QPushButton("重试登录")
         self.retry_btn.clicked.connect(self.start_login)
-        self.retry_btn.setEnabled(False)
-        h.addWidget(self.retry_btn)
+        self.retry_btn.hide()
+        layout.addWidget(self.retry_btn)
 
-        layout.addLayout(h)
-
-        mac_label = QtWidgets.QLabel(f"MAC: {self.mac}")
-        mac_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(mac_label)
+        mac_info = QtWidgets.QLabel(f"设备 ID: {self.mac[:12]}...")
+        mac_info.setStyleSheet("color: #666666; font-size: 10px;")
+        mac_info.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(mac_info)
 
     def start_login(self):
-        self.status_label.setText("登录中…")
+        self.status_label.setText("正在连接服务器...")
         self.progress.setRange(0, 0)
-        self.copy_btn.setEnabled(False)
-        self.retry_btn.setEnabled(False)
-
+        self.retry_btn.hide()
         self.worker.finished.connect(self.on_login_result)
         self.worker.start()
 
     def on_login_result(self, ok: bool, payload):
         if ok:
-            token = payload
-            self.status_label.setText("登录成功")
+            self.status_label.setText("登录成功，正在进入...")
             self.progress.setRange(0, 1)
-            QtCore.QTimer.singleShot(300, lambda: self.login_success.emit(token))
+            self.progress.setValue(1)
+            QtCore.QTimer.singleShot(800, lambda: self.login_success.emit(payload))
         else:
-            err = payload
-            self.status_label.setText(f"登录失败：{err}")
+            self.status_label.setText(f"登录失败: {payload}")
             self.progress.setRange(0, 1)
-            self.copy_btn.setEnabled(True)
-            self.retry_btn.setEnabled(True)
-
-    def copy_mac(self):
-        QtGui.QGuiApplication.clipboard().setText(self.mac)
-        QtWidgets.QToolTip.showText(self.mapToGlobal(self.copy_btn.pos()), "已复制 MAC")
+            self.progress.setValue(0)
+            self.retry_btn.show()
